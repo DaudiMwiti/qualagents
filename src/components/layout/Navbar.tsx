@@ -3,11 +3,15 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Database, Settings } from "lucide-react";
+import { Database, Settings, LucideBot } from "lucide-react";
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const supabase = useSupabaseClient();
+  const user = useUser();
   
   const isHome = location.pathname === "/";
   
@@ -26,6 +30,23 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <motion.header
@@ -54,6 +75,9 @@ const Navbar = () => {
           <NavLink to="/dashboard" active={location.pathname === "/dashboard"}>
             Dashboard
           </NavLink>
+          <NavLink to="/agent-settings" active={location.pathname === "/agent-settings"}>
+            AI Agents
+          </NavLink>
           <NavLink to="/settings" active={location.pathname === "/settings"}>
             Settings
           </NavLink>
@@ -61,18 +85,35 @@ const Navbar = () => {
         
         <div className="flex items-center space-x-3">
           {!isHome && (
-            <Button asChild variant="ghost" size="icon" className="h-9 w-9">
-              <Link to="/settings">
-                <Settings className="h-5 w-5" />
+            <>
+              <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+                <Link to="/agent-settings">
+                  <LucideBot className="h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+                <Link to="/settings">
+                  <Settings className="h-5 w-5" />
+                </Link>
+              </Button>
+            </>
+          )}
+          
+          {user ? (
+            <Button 
+              variant="outline" 
+              className="rounded-full transition-all duration-300"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
+          ) : (
+            <Button asChild className="rounded-full transition-all duration-300">
+              <Link to="/dashboard">
+                {isHome ? "Get Started" : "Dashboard"}
               </Link>
             </Button>
           )}
-          
-          <Button asChild className="rounded-full transition-all duration-300">
-            <Link to="/dashboard">
-              {isHome ? "Get Started" : "Dashboard"}
-            </Link>
-          </Button>
         </div>
       </div>
     </motion.header>
