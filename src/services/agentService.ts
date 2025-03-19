@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Agent Types
@@ -14,6 +13,7 @@ export interface Agent {
   confidence?: number;
   insights: string[];
   history?: AgentInteraction[];
+  contextSummary?: string; // Added field for compressed context
 }
 
 export interface AgentTask {
@@ -26,6 +26,7 @@ export interface AgentTask {
   output?: any;
   createdAt: string;
   updatedAt: string;
+  batchId?: string; // Added field for batch processing
 }
 
 export interface AgentCollaboration {
@@ -45,6 +46,8 @@ export interface AgentInteraction {
   content: string;
   type: 'input' | 'output' | 'insight';
   metadata?: Record<string, any>;
+  embedding?: number[]; // Added field for similarity search
+  isCompressed?: boolean; // Flag to identify compressed entries
 }
 
 export interface AgentPrompt {
@@ -53,6 +56,15 @@ export interface AgentPrompt {
   framework?: string;
   instructions: string;
   examples?: AgentInteraction[];
+}
+
+export interface AgentBatch {
+  id: string;
+  projectId: string;
+  agentIds: string[];
+  status: 'queued' | 'processing' | 'completed' | 'failed';
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Initialize Supabase client
@@ -167,18 +179,45 @@ export const agentService = {
     }
   },
   
-  // Create a new agent task
-  async createAgentTask(task: Omit<AgentTask, 'id' | 'createdAt' | 'updatedAt'>): Promise<AgentTask | null> {
+  // Create a new agent task with optional batch processing
+  async createAgentTask(task: Omit<AgentTask, 'id' | 'createdAt' | 'updatedAt'>, batchProcess = false): Promise<AgentTask | null> {
     try {
       const now = new Date().toISOString();
-      const newTask = {
+      const taskId = crypto.randomUUID();
+      
+      const newTask: AgentTask = {
         ...task,
-        id: crypto.randomUUID(),
+        id: taskId,
         status: 'queued',
         createdAt: now,
         updatedAt: now
       };
       
+      // If batching is enabled, just create the task and return
+      if (batchProcess) {
+        // Create a batch ID if not provided
+        if (!newTask.batchId) {
+          newTask.batchId = crypto.randomUUID();
+        }
+        
+        const { data, error } = await supabase
+          .from('agent_tasks')
+          .insert([newTask])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        // Update agent status but don't trigger processing
+        await supabase
+          .from('agents')
+          .update({ status: 'analyzing', updatedAt: now })
+          .eq('id', task.agentId);
+        
+        return data;
+      }
+      
+      // Standard non-batch processing
       const { data, error } = await supabase
         .from('agent_tasks')
         .insert([newTask])
@@ -206,6 +245,148 @@ export const agentService = {
     } catch (error) {
       console.error('Error creating agent task:', error);
       return null;
+    }
+  },
+  
+  // Create a batch of agent tasks for parallel processing
+  async createAgentBatch(projectId: string, agentIds: string[], taskType: AgentTask['taskType'], input: any): Promise<AgentBatch | null> {
+    try {
+      const now = new Date().toISOString();
+      const batchId = crypto.randomUUID();
+      
+      // Create an entry in the agent_batches table
+      const newBatch: AgentBatch = {
+        id: batchId,
+        projectId,
+        agentIds,
+        status: 'queued',
+        createdAt: now,
+        updatedAt: now
+      };
+      
+      const { data: batchData, error: batchError } = await supabase
+        .from('agent_batches')
+        .insert([newBatch])
+        .select()
+        .single();
+      
+      if (batchError) throw batchError;
+      
+      // Create tasks for all agents in the batch
+      const taskPromises = agentIds.map(agentId => 
+        this.createAgentTask({
+          agentId,
+          projectId,
+          taskType,
+          status: 'queued',
+          input,
+          batchId
+        }, true) // true for batch processing
+      );
+      
+      await Promise.all(taskPromises);
+      
+      // Trigger batch processing
+      await fetch('/api/process-agent-batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ batchId }),
+      });
+      
+      return batchData;
+    } catch (error) {
+      console.error('Error creating agent batch:', error);
+      return null;
+    }
+  },
+  
+  // Generate and store context summary for an agent
+  async compressAgentContext(agentId: string): Promise<boolean> {
+    try {
+      // Get most recent agent interactions
+      const { data: interactions, error: historyError } = await supabase
+        .from('agent_interactions')
+        .select('*')
+        .eq('agentId', agentId)
+        .order('timestamp', { ascending: false })
+        .limit(20);
+      
+      if (historyError) throw historyError;
+      
+      if (!interactions || interactions.length === 0) {
+        return true; // No compression needed
+      }
+      
+      // Call OpenAI to summarize the context
+      const response = await fetch('/api/summarize-agent-context', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agentId, interactions }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Error compressing context: ${JSON.stringify(error)}`);
+      }
+      
+      const result = await response.json();
+      
+      // Store the compressed context
+      const { error: updateError } = await supabase
+        .from('agents')
+        .update({
+          contextSummary: result.summary,
+          updatedAt: new Date().toISOString()
+        })
+        .eq('id', agentId);
+      
+      if (updateError) throw updateError;
+      
+      // Mark older interactions as compressed (except for insights)
+      const preserveIds = interactions
+        .filter(i => i.type === 'insight' || i.timestamp >= new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .map(i => i.id);
+      
+      const { error: compressError } = await supabase
+        .from('agent_interactions')
+        .update({ isCompressed: true })
+        .eq('agentId', agentId)
+        .not('id', 'in', `(${preserveIds.join(',')})`);
+      
+      if (compressError) throw compressError;
+      
+      return true;
+    } catch (error) {
+      console.error('Error compressing agent context:', error);
+      return false;
+    }
+  },
+  
+  // Get relevant context for an agent using similarity search
+  async getRelevantContext(agentId: string, query: string): Promise<AgentInteraction[]> {
+    try {
+      // Call the edge function for embedding search
+      const response = await fetch('/api/search-agent-context', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agentId, query }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to retrieve relevant context');
+      }
+      
+      const { relevantInteractions } = await response.json();
+      return relevantInteractions || [];
+    } catch (error) {
+      console.error('Error getting relevant context:', error);
+      return [];
     }
   },
   
@@ -251,7 +432,7 @@ export const agentService = {
     }
   },
   
-  // Start a collaboration session between multiple agents
+  // Start a collaboration session between multiple agents with batch processing
   async startCollaboration(projectId: string, agentIds: string[], collaborationLevel: number): Promise<AgentCollaboration | null> {
     try {
       const now = new Date().toISOString();
@@ -273,13 +454,11 @@ export const agentService = {
       
       if (error) throw error;
       
-      // Trigger the collaboration via edge function
-      await fetch('/api/start-agent-collaboration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ collaborationId: data.id }),
+      // Create a batch for all agents in the collaboration
+      await this.createAgentBatch(projectId, agentIds, 'analyze', {
+        projectId,
+        collaborationId: data.id,
+        collaborationLevel
       });
       
       return data;
