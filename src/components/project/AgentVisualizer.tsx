@@ -8,126 +8,130 @@ import {
   FileText,
   MessageSquare,
   Search,
+  Network,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-type Agent = {
-  id: string;
-  name: string;
-  methodology: string;
-  confidence: number;
-  status: "idle" | "analyzing" | "complete" | "error";
-  insights: string[];
-};
+import { Agent, agentService } from "@/services/agentService";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 type AgentVisualizerProps = {
   projectId: string;
 };
 
 const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
+  const supabase = useSupabaseClient();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Simulate fetching agents
+  // Fetch agents when component mounts
   useEffect(() => {
-    // This would be a real API call in production
-    const mockAgents: Agent[] = [
-      {
-        id: "agent-1",
-        name: "Grounded Theory Agent",
-        methodology: "Grounded Theory",
-        confidence: 0.89,
-        status: "complete",
-        insights: [
-          "Common themes include privacy concerns across demographic groups.",
-          "Emergent pattern of trust issues with automated systems.",
-          "Theoretical saturation reached in core trust-building category."
-        ]
-      },
-      {
-        id: "agent-2",
-        name: "Phenomenology Agent",
-        methodology: "Phenomenology",
-        confidence: 0.78,
-        status: "complete",
-        insights: [
-          "Users express feelings of disempowerment when encountering AI systems.",
-          "Shared experience of wonder and confusion when first interacting with the platform.",
-          "Distinct lived experience variations based on technical background."
-        ]
-      },
-      {
-        id: "agent-3",
-        name: "Discourse Analysis Agent",
-        methodology: "Discourse Analysis",
-        confidence: 0.82,
-        status: "analyzing",
-        insights: [
-          "Power dynamics evident in language patterns when describing AI capabilities.",
-          "Recurring metaphors of 'magic' and 'black box' in participant descriptions."
-        ]
-      },
-      {
-        id: "agent-4",
-        name: "Narrative Analysis Agent",
-        methodology: "Narrative Analysis",
-        confidence: 0.65,
-        status: "idle",
-        insights: []
-      },
-    ];
+    const loadAgents = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get the current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Get user's active agents
+          const userAgents = await agentService.getUserAgents(user.id);
+          
+          if (userAgents.length > 0) {
+            setAgents(userAgents);
+            setActiveAgent(userAgents[0].id);
+          } else {
+            // Fallback to mock agents if no user agents found
+            setAgents(getMockAgents());
+            setActiveAgent(getMockAgents()[0].id);
+          }
+        } else {
+          // User not authenticated, use mock agents
+          setAgents(getMockAgents());
+          setActiveAgent(getMockAgents()[0].id);
+        }
+      } catch (error) {
+        console.error("Error loading agents:", error);
+        setAgents(getMockAgents());
+        setActiveAgent(getMockAgents()[0].id);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    setAgents(mockAgents);
-    setActiveAgent(mockAgents[0].id);
-  }, [projectId]);
+    loadAgents();
+  }, [projectId, supabase.auth]);
+  
+  // Subscribe to agent updates
+  useEffect(() => {
+    if (!activeAgent) return;
+    
+    const subscription = agentService.subscribeToAgentUpdates(
+      activeAgent,
+      (updatedAgent) => {
+        setAgents((currentAgents) =>
+          currentAgents.map((agent) =>
+            agent.id === updatedAgent.id ? { ...agent, ...updatedAgent } : agent
+          )
+        );
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [activeAgent]);
 
   // Get the currently active agent
   const currentAgent = agents.find(agent => agent.id === activeAgent);
 
   return (
-    <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1 space-y-4">
-        <h3 className="text-lg font-medium flex items-center">
-          <Brain className="mr-2 h-5 w-5 text-primary" />
-          AI Research Agents
-        </h3>
-        
-        <div className="space-y-2">
-          {agents.map((agent) => (
-            <AgentCard
-              key={agent.id}
-              agent={agent}
-              isActive={agent.id === activeAgent}
-              onClick={() => setActiveAgent(agent.id)}
-            />
-          ))}
+    <div className="h-full flex flex-col">
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
-        
-        <Button className="w-full mt-4">
-          <Search className="mr-2 h-4 w-4" />
-          Add New Agent
-        </Button>
-      </div>
-      
-      <div className="lg:col-span-2">
-        {currentAgent ? (
-          <motion.div
-            key={currentAgent.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="glass-card h-full"
-          >
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-6">
+      ) : agents.length > 0 ? (
+        <div className="flex-1 flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-lg font-medium flex items-center">
+              <Brain className="mr-2 h-5 w-5 text-primary" />
+              Active Research Agents
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {agents.slice(0, 4).map((agent) => (
+              <AgentCard
+                key={agent.id}
+                agent={agent}
+                isActive={agent.id === activeAgent}
+                onClick={() => setActiveAgent(agent.id)}
+              />
+            ))}
+          </div>
+          
+          {currentAgent && (
+            <motion.div
+              key={currentAgent.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex-1 bg-card/30 rounded-lg p-4 border border-border/50"
+            >
+              <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-medium">{currentAgent.name}</h3>
                   <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                    <span>Methodology: {currentAgent.methodology}</span>
-                    <span className="mx-2">•</span>
-                    <span>Confidence: {(currentAgent.confidence * 100).toFixed(0)}%</span>
+                    <span>Type: {currentAgent.type}</span>
+                    {currentAgent.confidence && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>Confidence: {(currentAgent.confidence * 100).toFixed(0)}%</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <Badge 
@@ -143,78 +147,62 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
               </div>
               
               {currentAgent.status === "analyzing" && (
-                <div className="flex items-center justify-center bg-secondary/50 rounded-lg p-8 mb-6">
+                <div className="flex items-center justify-center bg-secondary/50 rounded-lg p-6 mb-4">
                   <div className="flex flex-col items-center">
                     <div className="relative">
-                      <div className="h-16 w-16 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-                      <Brain className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-primary" />
+                      <div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                      <Brain className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                     </div>
-                    <p className="mt-4 text-sm">Agent is analyzing your data...</p>
+                    <p className="mt-3 text-sm">Agent is analyzing data...</p>
                   </div>
                 </div>
               )}
               
               {currentAgent.status === "idle" && (
-                <div className="flex flex-col items-center justify-center bg-secondary/50 rounded-lg p-8 mb-6">
-                  <Brain className="h-12 w-12 text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">This agent hasn't been activated yet.</p>
-                  <Button className="mt-4">
-                    Start Analysis
-                  </Button>
+                <div className="flex flex-col items-center justify-center bg-secondary/50 rounded-lg p-6 mb-4">
+                  <Network className="h-10 w-10 text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground text-sm">Ready for analysis</p>
                 </div>
               )}
               
               {currentAgent.status === "complete" && currentAgent.insights.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center">
                     <FileText className="mr-2 h-5 w-5 text-primary" />
                     <h4 className="font-medium">Key Insights</h4>
                   </div>
                   
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 max-h-36 overflow-y-auto">
                     {currentAgent.insights.map((insight, index) => (
                       <motion.li
                         key={index}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="flex items-start p-3 bg-secondary/40 rounded-lg"
+                        className="flex items-start p-2 bg-secondary/40 rounded-lg text-sm"
                       >
-                        <CircleCheck className="h-5 w-5 text-primary shrink-0 mt-0.5 mr-3" />
+                        <CircleCheck className="h-4 w-4 text-primary shrink-0 mt-0.5 mr-2" />
                         <span>{insight}</span>
                       </motion.li>
                     ))}
                   </ul>
-                  
-                  <div className="flex justify-end space-x-2 mt-6">
-                    <Button variant="outline">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Ask Follow-up
-                    </Button>
-                    <Button>
-                      Validate Insights
-                    </Button>
-                  </div>
                 </div>
               )}
               
               {currentAgent.status === "error" && (
-                <div className="flex flex-col items-center justify-center bg-destructive/10 rounded-lg p-8 mb-6">
-                  <CircleAlert className="h-12 w-12 text-destructive mb-3" />
-                  <p className="text-destructive font-medium">Analysis encountered an error</p>
-                  <Button variant="outline" className="mt-4">
-                    Retry Analysis
-                  </Button>
+                <div className="flex flex-col items-center justify-center bg-destructive/10 rounded-lg p-6 mb-4">
+                  <CircleAlert className="h-10 w-10 text-destructive mb-3" />
+                  <p className="text-destructive font-medium text-sm">Analysis error</p>
                 </div>
               )}
-            </div>
-          </motion.div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">Select an agent to view insights</p>
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">No agents configured</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -244,21 +232,69 @@ const AgentCard = ({ agent, isActive, onClick }: AgentCardProps) => {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`px-4 py-3 rounded-lg cursor-pointer transition-colors ${
+      className={`px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm ${
         isActive
           ? "bg-primary text-primary-foreground"
           : "bg-secondary/50 hover:bg-secondary"
       }`}
     >
       <div className="flex justify-between items-center">
-        <div className="font-medium">{agent.name}</div>
+        <div className="font-medium truncate">{agent.name}</div>
         <div>{getStatusIcon(agent.status)}</div>
       </div>
-      <div className={`text-xs mt-1 ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-        {agent.methodology}
+      <div className={`text-xs mt-1 truncate ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+        {agent.type}
       </div>
     </motion.div>
   );
 };
+
+// Helper function to get mock agents for preview
+function getMockAgents(): Agent[] {
+  return [
+    {
+      id: "grounded-theory",
+      name: "Grounded Theory Agent",
+      type: "methodology",
+      methodology: "Grounded Theory",
+      confidence: 0.89,
+      status: "complete",
+      insights: [
+        "Common themes include privacy concerns across demographic groups.",
+        "Emergent pattern of trust issues with automated systems.",
+        "Theoretical saturation reached in core trust-building category."
+      ]
+    },
+    {
+      id: "feminist-theory",
+      name: "Feminist Theory Agent",
+      type: "theoretical",
+      framework: "Feminist Theory",
+      confidence: 0.78,
+      status: "complete",
+      insights: [
+        "Gender differences in technology adoption and usage patterns.",
+        "Power dynamics evident in user interface design choices.",
+        "Patterns of exclusion in AI training data."
+      ]
+    },
+    {
+      id: "bias-identification",
+      name: "Bias Identification Agent",
+      type: "validation",
+      confidence: 0.82,
+      status: "analyzing",
+      insights: []
+    },
+    {
+      id: "triangulation",
+      name: "Triangulation Agent",
+      type: "validation",
+      confidence: 0.65,
+      status: "idle",
+      insights: []
+    },
+  ];
+}
 
 export default AgentVisualizer;

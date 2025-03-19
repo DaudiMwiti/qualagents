@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
+import { agentService } from "@/services/agentService";
 
 const methodologies = [
   { value: "grounded-theory", label: "Grounded Theory" },
@@ -64,6 +65,7 @@ const AgentSettings = () => {
   const [selectedMethodology, setSelectedMethodology] = useState<string>("");
   const [selectedFramework, setSelectedFramework] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [projectId, setProjectId] = useState<string>("demo-project");
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -127,7 +129,7 @@ const AgentSettings = () => {
     }
   };
   
-  const handleRunSimulation = () => {
+  const handleRunSimulation = async () => {
     if (activeAgents.length === 0) {
       toast({
         title: "No agents selected",
@@ -137,11 +139,34 @@ const AgentSettings = () => {
       return;
     }
     
-    navigate("/dashboard");
-    toast({
-      title: "Simulation started",
-      description: "Your agent simulation has been initiated. View results in the dashboard.",
-    });
+    setIsProcessing(true);
+    
+    try {
+      const collaboration = await agentService.startCollaboration(
+        projectId,
+        activeAgents,
+        collaborationLevel / 100
+      );
+      
+      if (collaboration) {
+        navigate("/dashboard");
+        toast({
+          title: "Simulation started",
+          description: "Your agent simulation has been initiated. View results in the dashboard.",
+        });
+      } else {
+        throw new Error("Failed to start collaboration");
+      }
+    } catch (error) {
+      console.error("Error starting simulation:", error);
+      toast({
+        title: "Error starting simulation",
+        description: "There was a problem starting the agent simulation.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -333,7 +358,7 @@ const AgentSettings = () => {
                 <CardContent>
                   <div className="h-96 flex items-center justify-center">
                     <AgentVisualizer 
-                      projectId="demo-project"
+                      projectId={projectId}
                     />
                   </div>
                 </CardContent>
