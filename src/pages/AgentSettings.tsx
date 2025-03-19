@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -33,9 +32,8 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { AgentVisualizer } from "@/components/project/AgentVisualizer";
+import AgentVisualizer from "@/components/project/AgentVisualizer";
 
-// Define the agent types and methodologies
 const methodologies = [
   { value: "grounded-theory", label: "Grounded Theory" },
   { value: "phenomenology", label: "Phenomenology" },
@@ -70,11 +68,9 @@ const AgentSettings = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Check if user is authenticated with Supabase
     const checkAuth = async () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        // If not authenticated, redirect to home page
         navigate("/");
         toast({
           title: "Authentication required",
@@ -101,7 +97,6 @@ const AgentSettings = () => {
     setIsProcessing(true);
     
     try {
-      // Save agent settings to Supabase
       const { error } = await supabase
         .from('agent_settings')
         .upsert({
@@ -338,20 +333,7 @@ const AgentSettings = () => {
                 <CardContent>
                   <div className="h-96 flex items-center justify-center">
                     <AgentVisualizer 
-                      agents={activeAgents.map(id => {
-                        const allAgents = [...methodologies, ...theoreticalFrameworks, ...crossCheckingMethods];
-                        const agent = allAgents.find(a => a.value === id);
-                        return {
-                          id,
-                          name: agent?.label || id,
-                          type: methodologies.some(m => m.value === id) 
-                            ? 'methodology' 
-                            : theoreticalFrameworks.some(t => t.value === id)
-                              ? 'theoretical'
-                              : 'validation'
-                        };
-                      })}
-                      collaborationLevel={collaborationLevel / 100}
+                      projectId="demo-project"
                     />
                   </div>
                 </CardContent>
@@ -403,7 +385,6 @@ const AgentSettings = () => {
   );
 };
 
-// Agent Card Component
 interface AgentCardProps {
   id: string;
   title: string;
