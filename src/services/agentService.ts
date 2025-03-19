@@ -290,7 +290,7 @@ export const agentService = {
   },
   
   // Subscribe to agent status updates
-  subscribeToAgentUpdates(agentId: string, callback: (update: any) => void) {
+  subscribeToAgentUpdates(agentId: string, callback: (update: Agent) => void) {
     return supabase
       .channel(`agent-${agentId}`)
       .on('postgres_changes', {
@@ -299,13 +299,13 @@ export const agentService = {
         table: 'agents',
         filter: `id=eq.${agentId}`
       }, (payload) => {
-        callback(payload.new);
+        callback(payload.new as Agent);
       })
       .subscribe();
   },
   
   // Subscribe to task status updates
-  subscribeToTaskUpdates(taskId: string, callback: (update: any) => void) {
+  subscribeToTaskUpdates(taskId: string, callback: (update: AgentTask) => void) {
     return supabase
       .channel(`task-${taskId}`)
       .on('postgres_changes', {
@@ -314,13 +314,13 @@ export const agentService = {
         table: 'agent_tasks',
         filter: `id=eq.${taskId}`
       }, (payload) => {
-        callback(payload.new);
+        callback(payload.new as AgentTask);
       })
       .subscribe();
   },
   
   // Subscribe to collaboration updates
-  subscribeToCollaborationUpdates(collaborationId: string, callback: (update: any) => void) {
+  subscribeToCollaborationUpdates(collaborationId: string, callback: (update: AgentCollaboration) => void) {
     return supabase
       .channel(`collaboration-${collaborationId}`)
       .on('postgres_changes', {
@@ -329,7 +329,7 @@ export const agentService = {
         table: 'agent_collaborations',
         filter: `id=eq.${collaborationId}`
       }, (payload) => {
-        callback(payload.new);
+        callback(payload.new as AgentCollaboration);
       })
       .subscribe();
   },
@@ -344,7 +344,7 @@ export const agentService = {
         table: 'agent_interactions',
         filter: `agentId=eq.${agentId}`
       }, (payload) => {
-        callback(payload.new);
+        callback(payload.new as AgentInteraction);
       })
       .subscribe();
   }
