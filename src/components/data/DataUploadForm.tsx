@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,8 @@ const DataUploadForm = ({ projectId }: { projectId: string }) => {
     defaultValues: {
       chunkSize: "1000",
       overlap: "200",
-      cleaningOptions: ["removeExtraSpaces", "removeUrls"]
+      cleaningOptions: ["removeExtraSpaces", "removeUrls"],
+      customRegex: ""
     }
   });
   
