@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,11 @@ import { Link, useNavigate } from "react-router-dom";
 import PasswordResetForm from "./PasswordResetForm";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const AuthForm = () => {
+interface AuthFormProps {
+  defaultTab?: "signin" | "signup";
+}
+
+const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,7 +110,7 @@ const AuthForm = () => {
         <CardDescription>Sign in to your account or create a new one</CardDescription>
       </CardHeader>
       
-      <Tabs defaultValue="signin" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="signin">
             <UserCheck className="mr-2 h-4 w-4" />
