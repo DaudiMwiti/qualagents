@@ -34,7 +34,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { projectService, Project } from "@/services/projectService";
-import { insightsService, ProjectInsights as ProjectInsightsType, InsightMetric, InsightCategory, InsightTrend, InsightSummary } from "@/services/insightsService";
+import { insightsService, ProjectInsights, InsightMetric, InsightCategory, InsightTrend, InsightSummary } from "@/services/insightsService";
 import { useToast } from "@/hooks/use-toast";
 import {
   BarChart,

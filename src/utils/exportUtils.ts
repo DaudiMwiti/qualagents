@@ -1,7 +1,6 @@
-
 import { saveAs } from 'file-saver';
 import html2pdf from 'html2pdf.js';
-import { ProjectInsightsType, InsightMetric, InsightSummary } from '@/services/insightsService';
+import { ProjectInsights, InsightMetric, InsightSummary } from '@/services/insightsService';
 import { Project } from '@/services/projectService';
 
 // Helper for generating formatted date
@@ -28,7 +27,7 @@ const getMetadata = (project: Project) => {
 };
 
 // PDF Export
-export const exportAsPdf = async (project: Project, insights: ProjectInsightsType) => {
+export const exportAsPdf = async (project: Project, insights: ProjectInsights) => {
   const metadata = getMetadata(project);
   
   // Create a temporary div element to render the PDF content
@@ -197,7 +196,7 @@ export const exportAsPdf = async (project: Project, insights: ProjectInsightsTyp
 };
 
 // Markdown Export
-export const exportAsMarkdown = (project: Project, insights: ProjectInsightsType) => {
+export const exportAsMarkdown = (project: Project, insights: ProjectInsights) => {
   const metadata = getMetadata(project);
   let markdown = '';
   
@@ -271,7 +270,7 @@ export const exportAsMarkdown = (project: Project, insights: ProjectInsightsType
 };
 
 // CSV Export
-export const exportAsCsv = (project: Project, insights: ProjectInsightsType) => {
+export const exportAsCsv = (project: Project, insights: ProjectInsights) => {
   const metadata = getMetadata(project);
   
   // Prepare headers
@@ -298,7 +297,7 @@ export const exportAsCsv = (project: Project, insights: ProjectInsightsType) => 
 };
 
 // JSON Export
-export const exportAsJson = (project: Project, insights: ProjectInsightsType) => {
+export const exportAsJson = (project: Project, insights: ProjectInsights) => {
   const metadata = getMetadata(project);
   
   // Create a structured JSON object
