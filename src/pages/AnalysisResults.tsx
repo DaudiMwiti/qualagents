@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -23,6 +24,7 @@ const AnalysisResults = () => {
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasNotifiedCompletion, setHasNotifiedCompletion] = useState(false);
   
   useEffect(() => {
     if (!batchId) return;
@@ -43,11 +45,25 @@ const AnalysisResults = () => {
       const currentStatus = await analysisService.getAnalysisStatus(batchId);
       setStatus(currentStatus);
       
-      if (currentStatus.status === 'completed') {
+      if (currentStatus.status === 'completed' && !hasNotifiedCompletion) {
+        // Show a toast notification when analysis completes
+        toast({
+          title: "Analysis Complete!",
+          description: "Your document analysis has finished successfully.",
+          duration: 5000,
+        });
+        setHasNotifiedCompletion(true);
+        
         const analysisResults = await analysisService.getAnalysisResults(batchId);
         setResults(analysisResults);
         setLoading(false);
       } else if (currentStatus.status === 'failed') {
+        toast({
+          variant: "destructive",
+          title: "Analysis Failed",
+          description: currentStatus.error || "There was a problem with your analysis.",
+          duration: 5000,
+        });
         setError(currentStatus.error || "Analysis failed");
         setLoading(false);
       }

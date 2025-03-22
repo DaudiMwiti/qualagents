@@ -54,7 +54,7 @@ const RunAnalysisButton = ({
       
       toast({
         title: "Analysis started",
-        description: "Your documents are being analyzed. This may take a few minutes."
+        description: "Your documents are being analyzed. You'll be notified when it's complete."
       });
       
       // Navigate to the results page
