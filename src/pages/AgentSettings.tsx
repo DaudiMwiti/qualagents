@@ -30,7 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import { agentService } from "@/services/agentService";
