@@ -1,0 +1,15 @@
+
+services:
+  - type: web
+    name: qualagents-langgraph-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/langgraph_service/requirements.txt
+    startCommand: cd backend/langgraph_service && uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LOCAL_LLM_MODEL
+        value: google/flan-t5-large
+      - key: PORT
+        value: 8000
+      - key: CORS_ORIGINS
+        value: https://your-frontend-url.com

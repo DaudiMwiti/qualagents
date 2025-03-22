@@ -51,14 +51,17 @@ The API will be available at `http://localhost:8000`
 
 ## Deployment Options
 
-### Render.com
-1. Create a new Web Service
-2. Connect your repository
-3. Set the build command: `pip install -r backend/langgraph_service/requirements.txt`
-4. Set the start command: `cd backend/langgraph_service && uvicorn app:app --host 0.0.0.0 --port $PORT`
-5. Set environment variables:
-   - `LOCAL_LLM_MODEL=google/flan-t5-large`
-   - `CORS_ORIGINS=https://your-frontend-url.com`
+### Render.com (Recommended)
+1. Push your code to GitHub
+2. In Render.com, create a new Web Service and select your repository
+3. Render will automatically detect the `render.yaml` file and configure the service
+4. Alternatively, you can set up manually with these settings:
+   - Build Command: `pip install -r backend/langgraph_service/requirements.txt`
+   - Start Command: `cd backend/langgraph_service && uvicorn app:app --host 0.0.0.0 --port $PORT`
+   - Environment Variables:
+     - `LOCAL_LLM_MODEL`: `google/flan-t5-large`
+     - `PORT`: `8000`
+     - `CORS_ORIGINS`: Your frontend URL
 
 ### Fly.io
 1. Install the Fly CLI
@@ -111,13 +114,15 @@ To use this service with the React frontend:
 
 1. Ensure the service is running (either locally or deployed)
 2. Set the `USE_LANGGRAPH_BACKEND` environment variable to `true` in your frontend environment
-3. Make sure your frontend's `vite.config.ts` file includes:
+3. Set the `LANGGRAPH_API_URL` to your deployed backend URL
+4. Make sure your frontend's `vite.config.ts` file includes:
    ```typescript
    define: {
-     'process.env.USE_LANGGRAPH_BACKEND': JSON.stringify(process.env.USE_LANGGRAPH_BACKEND)
+     'process.env.USE_LANGGRAPH_BACKEND': JSON.stringify(process.env.USE_LANGGRAPH_BACKEND),
+     'process.env.LANGGRAPH_API_URL': JSON.stringify(process.env.LANGGRAPH_API_URL)
    }
    ```
-4. The frontend will automatically connect to this service instead of using the simulated responses
+5. The frontend will automatically connect to this service instead of using the simulated responses
 
 ## Available Agent Types
 
