@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, BarChart, Brain, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, BarChart, Brain, Loader2, AlertCircle, FileText, Lightbulb, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { analysisService, AnalysisStatus, AnalysisResult } from "@/services/anal
 import { InsightsTab } from "@/components/insights/tabs/InsightsTab";
 import { ProjectInsights } from "@/services/insightsService";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 
 const AnalysisResults = () => {
   const { projectId, batchId } = useParams();
@@ -239,6 +240,20 @@ const AnalysisResults = () => {
         value: results.insights.length,
         status: "positive",
         description: "Total number of insights found in your data"
+      },
+      {
+        id: "metrics-2",
+        name: "Documents Analyzed",
+        value: results.documentStats?.totalProcessed || 0,
+        status: "positive",
+        description: "Number of documents processed in this analysis"
+      },
+      {
+        id: "metrics-3",
+        name: "Document Chunks",
+        value: results.documentStats?.totalChunks || 0,
+        status: "neutral",
+        description: "Number of text chunks created for analysis"
       }
     ],
     categories: Object.keys(results.agentResults).map(agentId => ({
@@ -286,11 +301,65 @@ const AnalysisResults = () => {
             <Card className="mb-8">
               <CardHeader>
                 <div className="flex items-center">
-                  <Brain className="h-5 w-5 text-primary mr-2" />
-                  <CardTitle>AI Analysis Summary</CardTitle>
+                  <Database className="h-5 w-5 text-primary mr-2" />
+                  <CardTitle>Document Processing Summary</CardTitle>
                 </div>
                 <CardDescription>
-                  Our AI agents have analyzed your data and identified the following insights.
+                  Overview of the documents processed in this analysis run.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+                  <Card className="border border-border/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base font-medium flex items-center">
+                        <FileText className="mr-2 h-4 w-4 text-blue-500" />
+                        Documents
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold mb-1">{results.documentStats?.totalProcessed || 0}</div>
+                      <p className="text-sm text-muted-foreground">Total documents analyzed</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border border-border/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base font-medium flex items-center">
+                        <Database className="mr-2 h-4 w-4 text-amber-500" />
+                        Chunks
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold mb-1">{results.documentStats?.totalChunks || 0}</div>
+                      <p className="text-sm text-muted-foreground">Text segments processed</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border border-border/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base font-medium flex items-center">
+                        <Lightbulb className="mr-2 h-4 w-4 text-green-500" />
+                        Insights
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold mb-1">{results.insights.length}</div>
+                      <p className="text-sm text-muted-foreground">Total insights found</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="mb-8">
+              <CardHeader>
+                <div className="flex items-center">
+                  <Brain className="h-5 w-5 text-primary mr-2" />
+                  <CardTitle>AI Analysis by Methodology</CardTitle>
+                </div>
+                <CardDescription>
+                  Results organized by agent and methodology type.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -298,20 +367,30 @@ const AnalysisResults = () => {
                   {Object.entries(results.agentResults).map(([agentId, agentInsights]) => (
                     <Card key={agentId} className="border border-border/50">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-medium">
+                        <CardTitle className="text-base font-medium flex items-center">
+                          <Brain className="mr-2 h-4 w-4" />
                           {agentId.split('-').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')} Agent
                         </CardTitle>
-                        <CardDescription>
-                          {agentInsights.length} insights found
+                        <CardDescription className="flex items-center">
+                          <Badge variant="outline" className="mr-2">{agentInsights.length} insights</Badge>
+                          <Badge variant="secondary">
+                            {agentId.split('-').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(' ')} Methodology
+                          </Badge>
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2 text-sm">
                           {agentInsights.map(insight => (
-                            <li key={insight.id} className="text-sm">
-                              • {insight.text}
+                            <li key={insight.id} className="text-sm border-l-2 border-primary/50 pl-3 py-1">
+                              {insight.text}
+                              <div className="mt-1 flex items-center text-xs text-muted-foreground">
+                                <span className="font-medium mr-1">Confidence:</span> 
+                                {Math.round(insight.confidence * 100)}%
+                              </div>
                             </li>
                           ))}
                         </ul>

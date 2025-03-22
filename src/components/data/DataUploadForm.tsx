@@ -1,10 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FileUploadSection from "./FileUploadSection";
 import TextPreprocessingSection from "./TextPreprocessingSection";
 import { 
@@ -15,6 +17,8 @@ import {
   PREPROCESSING_MIN_OVERLAP,
   PREPROCESSING_MAX_OVERLAP
 } from "@/types/data-upload";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, FileCheck, Settings } from "lucide-react";
 
 interface DataUploadFormProps {
   projectId: string;
@@ -55,6 +59,8 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
+  const [processedFiles, setProcessedFiles] = useState<string[]>([]);
+  const navigate = useNavigate();
   
   const form = useForm<PreprocessingFormValues>({
     resolver: zodResolver(preprocessingSchema),
@@ -65,6 +71,19 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
       customRegex: ""
     }
   });
+  
+  // Restore processed files from localStorage if any
+  useEffect(() => {
+    const savedFiles = localStorage.getItem(`project_${projectId}_processed_files`);
+    if (savedFiles) {
+      try {
+        const files = JSON.parse(savedFiles);
+        setProcessedFiles(files);
+      } catch (e) {
+        console.error("Error restoring processed files:", e);
+      }
+    }
+  }, [projectId]);
   
   const processFiles = async () => {
     if (uploadedFiles.length === 0) {
@@ -82,6 +101,18 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
       // In a real implementation, this would send the files to the server for processing
       // For now, we'll just simulate a delay
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Extract file names for processed files list
+      const fileNames = uploadedFiles.map(file => file.file.name);
+      
+      // Save to localStorage for demo persistence
+      const existingFiles = [...processedFiles];
+      const newFiles = [...new Set([...existingFiles, ...fileNames])];
+      setProcessedFiles(newFiles);
+      localStorage.setItem(`project_${projectId}_processed_files`, JSON.stringify(newFiles));
+      
+      // Also store a count in a project document count key
+      localStorage.setItem(`project_${projectId}_document_count`, newFiles.length.toString());
       
       toast({
         title: "Files processed successfully",
@@ -107,15 +138,22 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
     
     try {
       console.log("Preprocessing with settings:", data);
-      console.log("Files:", uploadedFiles);
+      console.log("Files:", processedFiles);
       
       // In a real implementation, this would send the preprocessing settings and files to the server
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Store preprocessing settings in localStorage
+      localStorage.setItem(`project_${projectId}_preprocessing`, JSON.stringify(data));
       
       toast({
         title: "Preprocessing complete",
         description: "Your data is now ready for agent analysis."
       });
+      
+      // Navigate back to the project page
+      navigate(`/project/${projectId}`);
+      
     } catch (error) {
       console.error("Error preprocessing:", error);
       toast({
@@ -143,6 +181,38 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
             isProcessing={isProcessing}
             onProcessFiles={processFiles}
           />
+          
+          {processedFiles.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileCheck className="mr-2 h-5 w-5 text-green-500" />
+                  Previously Processed Files
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {processedFiles.map((fileName, index) => (
+                    <li key={index} className="text-sm flex items-center">
+                      <FileCheck className="mr-2 h-4 w-4 text-green-500" />
+                      {fileName}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveTab("preprocess")}
+                  className="mt-2"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Configure Preprocessing
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
         </TabsContent>
         
         <TabsContent value="preprocess" className="space-y-6">
