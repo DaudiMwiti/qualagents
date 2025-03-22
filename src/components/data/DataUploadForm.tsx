@@ -13,9 +13,10 @@ import { toast as sonnerToast } from "sonner";
 
 interface DataUploadFormProps {
   projectId: string;
+  onUploadComplete?: (count: number) => void;
 }
 
-const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
+const DataUploadForm = ({ projectId, onUploadComplete }: DataUploadFormProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -132,6 +133,11 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
         processed: true,
         timestamp: new Date().toISOString()
       }));
+      
+      // Call the onUploadComplete callback if provided
+      if (onUploadComplete) {
+        onUploadComplete(uploadedFiles.length);
+      }
       
       // Wait a moment before redirecting
       setTimeout(() => {
