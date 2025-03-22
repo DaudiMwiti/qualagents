@@ -1,5 +1,7 @@
+
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { Agent as AgentType, createSubscription } from "@/types/agent";
 
 export interface Agent {
   id: string;
@@ -120,10 +122,26 @@ export interface Agent {
   is_monitoring_skills_enabled: boolean;
   is_evaluation_skills_enabled: boolean;
   is_adaptationSkillsEnabled: boolean;
+  
+  // Additional properties from AgentType interface
+  type?: string;
+  status?: 'idle' | 'analyzing' | 'complete' | 'error';
+  insights?: string[];
+  methodology?: string;
+  framework?: string;
+  confidence?: number;
+  persona?: {
+    id: string;
+    name: string;
+    description: string;
+    traits: string[];
+    avatar?: string;
+  };
+  pinnedMethodologies?: string[];
 }
 
 class AgentService {
-  async getAgents(supabase: any) {
+  async getAgents(supabase?: any) {
     try {
       // This is a mock implementation - in a real app, you'd query Supabase
       return [
@@ -137,6 +155,16 @@ class AgentService {
           temperature: 0.7,
           max_tokens: 200,
           prompt: "Analyze the following qualitative data using grounded theory principles...",
+          // Type properties
+          type: "methodology",
+          methodology: "Grounded Theory",
+          status: "complete" as const,
+          insights: [
+            "Common themes include privacy concerns across demographic groups.",
+            "Emergent pattern of trust issues with automated systems.",
+            "Theoretical saturation reached in core trust-building category."
+          ],
+          confidence: 0.89,
           // Include all the other properties needed for the AgentSettings component
           is_safe_mode: true,
           is_streaming: false,
@@ -265,6 +293,131 @@ class AgentService {
       console.error("Error saving insight feedback:", error);
       throw error;
     }
+  }
+
+  // Add missing methods
+  async getUserAgents(userId: string) {
+    try {
+      // Mock implementation
+      console.log(`Getting agents for user: ${userId}`);
+      return this.getAgents();
+    } catch (error) {
+      console.error("Error getting user agents:", error);
+      throw error;
+    }
+  }
+
+  subscribeToAgentUpdates(agentId: string, callback: (agent: any) => void) {
+    console.log(`Subscribing to updates for agent: ${agentId}`);
+    // Mock implementation - return a subscription object
+    return createSubscription(() => {
+      console.log(`Unsubscribed from agent updates: ${agentId}`);
+    });
+  }
+
+  subscribeToAgentInteractions(agentId: string, callback: (interaction: any) => void) {
+    console.log(`Subscribing to interactions for agent: ${agentId}`);
+    // Mock implementation - return a subscription object
+    return createSubscription(() => {
+      console.log(`Unsubscribed from agent interactions: ${agentId}`);
+    });
+  }
+
+  async startCollaboration(projectId: string, agentIds: string[], temperature: number) {
+    console.log(`Starting collaboration for project ${projectId} with agents ${agentIds.join(', ')} at temperature ${temperature}`);
+    // Mock implementation
+    return { success: true };
+  }
+
+  getPersonas() {
+    // Mock implementation
+    return [
+      {
+        id: "feminist-researcher",
+        name: "Feminist Researcher",
+        description: "Focuses on power dynamics, gender biases, and structural inequalities in data.",
+        traits: ["Critical", "Intersectional", "Equity-focused"]
+      },
+      {
+        id: "grounded-theorist",
+        name: "Grounded Theorist",
+        description: "Builds theory inductively from data without preconceived hypotheses.",
+        traits: ["Open-minded", "Systematic", "Iterative"]
+      },
+      {
+        id: "phenomenologist",
+        name: "Phenomenologist",
+        description: "Explores lived experiences and subjective interpretations of phenomena.",
+        traits: ["Empathetic", "Descriptive", "Experiential"]
+      }
+    ];
+  }
+
+  getMethodologies() {
+    // Mock implementation
+    return [
+      {
+        id: "grounded-theory",
+        name: "Grounded Theory",
+        description: "Systematic generation of theory from data."
+      },
+      {
+        id: "phenomenology",
+        name: "Phenomenology",
+        description: "Study of experience and consciousness."
+      },
+      {
+        id: "discourse-analysis",
+        name: "Discourse Analysis",
+        description: "Analysis of language and communication patterns."
+      },
+      {
+        id: "narrative-analysis",
+        name: "Narrative Analysis",
+        description: "Focus on stories and storytelling elements."
+      }
+    ];
+  }
+
+  async createCustomAgent(agentData: any) {
+    console.log("Creating custom agent:", agentData);
+    // Mock implementation
+    return {
+      id: `custom-${Date.now()}`,
+      ...agentData,
+      status: 'idle' as const,
+      insights: []
+    };
+  }
+
+  async updateAgent(agentId: string, agentData: any) {
+    console.log(`Updating agent ${agentId}:`, agentData);
+    // Mock implementation
+    return {
+      id: agentId,
+      ...agentData
+    };
+  }
+
+  async createAgent(agentData: any) {
+    console.log("Creating agent:", agentData);
+    // Mock implementation
+    return {
+      id: `new-${Date.now()}`,
+      ...agentData,
+      status: 'idle' as const,
+      insights: []
+    };
+  }
+
+  async deleteAgent(agentId: string) {
+    console.log(`Deleting agent: ${agentId}`);
+    // Mock implementation
+    return { success: true };
+  }
+
+  async getAll() {
+    return this.getAgents();
   }
 }
 

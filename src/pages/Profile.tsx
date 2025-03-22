@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
@@ -22,7 +21,6 @@ import { getGravatarUrl } from "@/utils/profileUtils";
 import { useThemePreference } from "@/hooks/use-theme-preference";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Define the profile schema
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   defaultExportFormat: z.enum(["pdf", "csv", "markdown", "json"]),
@@ -41,7 +39,6 @@ const Profile = () => {
   const { theme, setTheme } = useThemePreference();
   const isMobile = useIsMobile();
   
-  // Profile form
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -51,7 +48,6 @@ const Profile = () => {
     },
   });
 
-  // Fetch user profile on load
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -62,13 +58,10 @@ const Profile = () => {
       try {
         setIsLoading(true);
         
-        // Get user's email for Gravatar
         const email = user.email || "";
         
-        // Check if the user has a Google avatar
         const googleAvatarUrl = user?.user_metadata?.avatar_url;
         
-        // Use Google avatar or fall back to Gravatar
         if (googleAvatarUrl) {
           setAvatarUrl(googleAvatarUrl);
           setLoginProvider("google");
@@ -77,7 +70,6 @@ const Profile = () => {
           setLoginProvider("email");
         }
         
-        // Get profile data from Supabase
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
@@ -95,10 +87,8 @@ const Profile = () => {
         }
         
         if (profile) {
-          // Parse the saved preferences JSON
           const preferences = profile.preferences || {};
           
-          // Update form values
           form.reset({
             name: profile.name || user.user_metadata?.full_name || "",
             defaultExportFormat: preferences.defaultExportFormat || "pdf",
@@ -126,7 +116,6 @@ const Profile = () => {
     try {
       setIsLoading(true);
       
-      // Get existing preferences to merge with new ones
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("preferences")
@@ -135,14 +124,12 @@ const Profile = () => {
         
       const existingPreferences = existingProfile?.preferences || {};
       
-      // Extract preferences to store as JSONB, preserving existing theme preference
       const preferences = {
         ...existingPreferences,
         defaultExportFormat: values.defaultExportFormat,
         preferredMethodologies: values.preferredMethodologies,
       };
       
-      // Update profile in Supabase
       const { error } = await supabase
         .from("profiles")
         .upsert({
@@ -163,9 +150,9 @@ const Profile = () => {
       }
       
       toast({
-        title: "Success",
-        description: "Your profile has been updated.",
-        variant: "success",
+        title: "Profile updated successfully",
+        description: "Your profile information has been updated.",
+        variant: "default",
       });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -192,7 +179,6 @@ const Profile = () => {
         </div>
         
         <div className="grid gap-6 md:grid-cols-12">
-          {/* User info card */}
           <Card className="md:col-span-4">
             <CardHeader className={isMobile ? "px-4 py-4" : ""}>
               <CardTitle className={isMobile ? "text-lg" : ""}>Account Information</CardTitle>
@@ -255,7 +241,6 @@ const Profile = () => {
             </CardFooter>
           </Card>
           
-          {/* Preferences form */}
           <Card className="md:col-span-8">
             <CardHeader className={isMobile ? "px-4 py-4" : ""}>
               <CardTitle className={isMobile ? "text-lg" : ""}>Preferences</CardTitle>
