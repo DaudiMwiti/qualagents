@@ -13,3 +13,7 @@ services:
         value: 8000
       - key: CORS_ORIGINS
         value: https://your-frontend-url.com
+      - key: SUPABASE_URL
+        value: https://lqwadxfyjsashkdrevcr.supabase.co
+      - key: SUPABASE_KEY
+        sync: false  # This will prompt for the value during deployment

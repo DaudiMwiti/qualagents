@@ -13,6 +13,8 @@ from langchain.schema import HumanMessage, AIMessage
 from transformers import pipeline, AutoConfig
 from langchain.llms import HuggingFacePipeline
 import logging
+import json
+from supabase import create_client, Client
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +24,21 @@ logger = logging.getLogger(__name__)
 DEFAULT_MODEL = "google/flan-t5-large"
 MODEL_NAME = os.getenv("LOCAL_LLM_MODEL", DEFAULT_MODEL)
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8080").split(",")
+
+# Supabase configuration
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase: Optional[Client] = None
+
+# Initialize Supabase if credentials are available
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        logger.info("Supabase client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Supabase client: {str(e)}")
+else:
+    logger.warning("Supabase credentials not found. Supabase integration is disabled.")
 
 app = FastAPI(title="LangGraph Analysis Service")
 
@@ -141,9 +158,62 @@ def create_agent_for_method(agent_id: str):
     
     return graph
 
+async def fetch_project_data_from_supabase(project_id: str):
+    """Fetch project data from Supabase"""
+    if not supabase:
+        logger.warning("Supabase not initialized, using mock data")
+        return {
+            "documents": [
+                {"id": "doc1", "name": "Document 1", "content": "Sample content for testing"},
+                {"id": "doc2", "name": "Document 2", "content": "More sample content for analysis"}
+            ]
+        }
+    
+    try:
+        # Fetch project documents from Supabase
+        response = await supabase.table("documents").select("*").eq("project_id", project_id).execute()
+        
+        if response.data:
+            return {"documents": response.data}
+        else:
+            logger.warning(f"No documents found for project {project_id}")
+            return {"documents": []}
+            
+    except Exception as e:
+        logger.error(f"Error fetching project data: {str(e)}")
+        return {"documents": []}
+
+async def store_insights_in_supabase(batch_id: str, insights: List[dict], project_id: str):
+    """Store insights in Supabase"""
+    if not supabase:
+        logger.warning("Supabase not initialized, skipping insight storage")
+        return
+    
+    try:
+        # Prepare insights for storage
+        insight_records = []
+        for insight in insights:
+            insight_records.append({
+                "id": insight.get("id", str(uuid.uuid4())),
+                "batch_id": batch_id,
+                "project_id": project_id,
+                "text": insight.get("text", ""),
+                "relevance": insight.get("relevance", 0),
+                "methodology": insight.get("methodology", ""),
+                "agent_id": insight.get("agentId", ""),
+                "created_at": insight.get("created_at", None)
+            })
+        
+        if insight_records:
+            # Store in agent_insights table
+            await supabase.table("agent_insights").insert(insight_records).execute()
+            logger.info(f"Stored {len(insight_records)} insights in Supabase")
+    except Exception as e:
+        logger.error(f"Error storing insights: {str(e)}")
+
 @app.get("/")
 async def root():
-    return {"message": "LangGraph Analysis Service is running", "model": MODEL_NAME}
+    return {"message": "LangGraph Analysis Service is running", "model": MODEL_NAME, "supabase_connected": supabase is not None}
 
 @app.post("/run-analysis", response_model=AnalysisResponse)
 async def run_analysis(request: AnalysisRequest):
@@ -161,6 +231,23 @@ async def run_analysis(request: AnalysisRequest):
         
         if not valid_agents:
             raise HTTPException(status_code=400, detail="No valid agents specified")
+        
+        # If Supabase is connected, fetch project data
+        project_data = await fetch_project_data_from_supabase(request.project_id)
+        
+        # If connected to Supabase, record the analysis batch
+        if supabase:
+            try:
+                batch_data = {
+                    "id": batch_id,
+                    "project_id": request.project_id,
+                    "agent_ids": request.agent_ids,
+                    "status": "in-progress"
+                }
+                await supabase.table("agent_batches").insert(batch_data).execute()
+                logger.info(f"Recorded analysis batch {batch_id} in Supabase")
+            except Exception as e:
+                logger.error(f"Error recording batch: {str(e)}")
         
         # Process each agent (in a real system, this would be parallelized or queued)
         insights = []
@@ -222,6 +309,17 @@ async def run_analysis(request: AnalysisRequest):
         # Generate a summary based on all insights
         summary = "Analysis reveals significant usability challenges with the navigation interface, particularly on mobile devices. Gender disparities exist in how technical issues are reported, with women providing more specific details about interface problems. The documentation uses technical jargon that creates barriers for non-expert users."
         
+        # If Supabase is connected, store the insights
+        await store_insights_in_supabase(batch_id, insights, request.project_id)
+        
+        # If Supabase is connected, update the batch status
+        if supabase:
+            try:
+                await supabase.table("agent_batches").update({"status": "completed"}).eq("id", batch_id).execute()
+                logger.info(f"Updated batch {batch_id} status to completed")
+            except Exception as e:
+                logger.error(f"Error updating batch status: {str(e)}")
+        
         return AnalysisResponse(
             batch_id=batch_id,
             insights=insights,
@@ -230,6 +328,18 @@ async def run_analysis(request: AnalysisRequest):
         
     except Exception as e:
         logger.error(f"Error in run_analysis: {str(e)}")
+        
+        # If Supabase is connected, update the batch status to failed
+        if supabase and 'batch_id' in locals():
+            try:
+                await supabase.table("agent_batches").update({
+                    "status": "failed",
+                    "error": str(e)
+                }).eq("id", batch_id).execute()
+                logger.info(f"Updated batch {batch_id} status to failed")
+            except Exception as db_error:
+                logger.error(f"Error updating batch status: {str(db_error)}")
+                
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
