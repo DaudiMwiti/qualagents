@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +39,12 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would upload the file to the server/Supabase
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast({
         title: "Files uploaded successfully",
         description: `${uploadedFiles.length} files have been uploaded.`,
-        variant: "default", // Changed from "success" to "default"
+        variant: "default",
       });
       
       setStep(2);
@@ -66,13 +65,12 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
     setIsPreprocessing(true);
     
     try {
-      // In a real app, this would handle the preprocessing
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
         title: "Preprocessing complete",
         description: "Text preprocessing has been completed successfully.",
-        variant: "default", // Changed from "success" to "default"
+        variant: "default",
       });
       
       setStep(3);
@@ -87,6 +85,25 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
       setIsPreprocessing(false);
     }
   };
+
+  useEffect(() => {
+    if (isPreprocessing) {
+      const interval = setInterval(() => {
+        setPreprocessingProgress(prev => {
+          const newProgress = prev + 10;
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 200);
+      
+      return () => clearInterval(interval);
+    } else {
+      setPreprocessingProgress(0);
+    }
+  }, [isPreprocessing]);
 
   return (
     <div className="container mx-auto py-10">
