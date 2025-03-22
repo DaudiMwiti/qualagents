@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import AgentChat from "@/components/project/AgentChat";
+import AgentExplainability from "@/components/project/AgentExplainability";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -18,13 +18,13 @@ import {
   Upload,
   Users,
   Brain,
+  Info,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Agent } from "@/services/agentService";
 
-// Mock data project
 const mockProject = {
   id: "proj-1",
   title: "Patient Experience Analysis",
@@ -42,18 +42,20 @@ const ProjectView = () => {
   const [activeAgents, setActiveAgents] = useState<string[]>([
     "grounded-theory", "feminist-theory", "bias-identification"
   ]);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // This would fetch project data from an API in a real application
     if (id && id !== "new") {
-      // Fetch project data
       console.log("Fetching project with ID:", id);
     }
   }, [id]);
   
-  // If this is a new project page
+  const handleAgentSelect = (agent: Agent) => {
+    setSelectedAgent(agent);
+  };
+  
   if (id === "new") {
     return (
       <PageTransition>
@@ -160,6 +162,10 @@ const ProjectView = () => {
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Agent Chat
                 </TabsTrigger>
+                <TabsTrigger value="explain" className="flex">
+                  <Info className="h-4 w-4 mr-2" />
+                  Explainability
+                </TabsTrigger>
                 <TabsTrigger value="insights" className="flex">
                   <BarChart className="h-4 w-4 mr-2" />
                   Insights
@@ -175,13 +181,38 @@ const ProjectView = () => {
               </TabsList>
               
               <TabsContent value="agents" className="m-0">
-                <AgentVisualizer projectId={project.id} />
+                <AgentVisualizer 
+                  projectId={project.id} 
+                  onAgentSelect={handleAgentSelect}
+                />
               </TabsContent>
               
               <TabsContent value="chat" className="m-0">
                 <div className="h-[600px]">
                   <AgentChat projectId={project.id} activeAgents={activeAgents} />
                 </div>
+              </TabsContent>
+              
+              <TabsContent value="explain" className="m-0">
+                {selectedAgent ? (
+                  <AgentExplainability agent={selectedAgent} />
+                ) : (
+                  <div className="glass-card p-8 text-center">
+                    <Info className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">Agent Explainability</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Select an agent from the "AI Agents" tab to see detailed explanation of its reasoning process.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.querySelector('[data-value="agents"]')?.dispatchEvent(
+                        new MouseEvent('click', { bubbles: true })
+                      )}
+                    >
+                      Go to Agents Tab
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="insights" className="m-0">

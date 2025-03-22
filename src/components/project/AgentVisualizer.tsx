@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   Search,
   Network,
   ArrowRightLeft,
+  Info
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,10 @@ import { useToast } from "@/hooks/use-toast";
 
 type AgentVisualizerProps = {
   projectId: string;
+  onAgentSelect?: (agent: Agent) => void;
 };
 
-const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
+const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => {
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -30,29 +31,24 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
   const [agentInteractions, setAgentInteractions] = useState<Record<string, string[]>>({});
   const [isCollaborating, setIsCollaborating] = useState(false);
   
-  // Fetch agents when component mounts
   useEffect(() => {
     const loadAgents = async () => {
       try {
         setIsLoading(true);
         
-        // Get the current user
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // Get user's active agents
           const userAgents = await agentService.getUserAgents(user.id);
           
           if (userAgents.length > 0) {
             setAgents(userAgents);
             setActiveAgent(userAgents[0].id);
           } else {
-            // Fallback to mock agents if no user agents found
             setAgents(getMockAgents());
             setActiveAgent(getMockAgents()[0].id);
           }
         } else {
-          // User not authenticated, use mock agents
           setAgents(getMockAgents());
           setActiveAgent(getMockAgents()[0].id);
         }
@@ -68,7 +64,6 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
     loadAgents();
   }, [projectId, supabase.auth]);
   
-  // Subscribe to agent updates
   useEffect(() => {
     if (!activeAgent) return;
     
@@ -88,7 +83,6 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
     };
   }, [activeAgent]);
 
-  // Subscribe to agent interactions
   useEffect(() => {
     const subscriptions = agents.map(agent => {
       return agentService.subscribeToAgentInteractions(
@@ -109,10 +103,20 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
     };
   }, [agents]);
 
-  // Get the currently active agent
   const currentAgent = agents.find(agent => agent.id === activeAgent);
 
-  // Start a collaboration session between agents
+  const handleAgentClick = (agent: Agent) => {
+    setActiveAgent(agent.id);
+    
+    if (onAgentSelect) {
+      onAgentSelect(agent);
+      
+      document.querySelector('[data-value="explain"]')?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true })
+      );
+    }
+  };
+
   const startCollaboration = async () => {
     if (agents.length < 2) {
       toast({
@@ -130,7 +134,7 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
       await agentService.startCollaboration(
         projectId,
         activeAgentIds,
-        0.7 // Collaboration level (0-1)
+        0.7
       );
       
       toast({
@@ -162,16 +166,37 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
               Active Research Agents
             </h3>
             
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={startCollaboration}
-              disabled={isCollaborating || agents.length < 2}
-              className="flex items-center text-xs"
-            >
-              <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-              {isCollaborating ? "Collaboration in progress..." : "Start Agent Collaboration"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentAgent && onAgentSelect) {
+                    onAgentSelect(currentAgent);
+                    
+                    document.querySelector('[data-value="explain"]')?.dispatchEvent(
+                      new MouseEvent('click', { bubbles: true })
+                    );
+                  }
+                }}
+                disabled={!currentAgent}
+                className="flex items-center text-xs"
+              >
+                <Info className="mr-1.5 h-3.5 w-3.5" />
+                View Explainability
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={startCollaboration}
+                disabled={isCollaborating || agents.length < 2}
+                className="flex items-center text-xs"
+              >
+                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                {isCollaborating ? "Collaboration in progress..." : "Start Agent Collaboration"}
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-2 mb-4">
@@ -180,7 +205,7 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
                 key={agent.id}
                 agent={agent}
                 isActive={agent.id === activeAgent}
-                onClick={() => setActiveAgent(agent.id)}
+                onClick={() => handleAgentClick(agent)}
                 lastMessage={agentInteractions[agent.id]?.slice(-1)[0]}
               />
             ))}
@@ -270,7 +295,6 @@ const AgentVisualizer = ({ projectId }: AgentVisualizerProps) => {
                 </div>
               )}
               
-              {/* Real-time agent interactions section */}
               {agentInteractions[currentAgent.id]?.length > 0 && (
                 <div className="mt-4 space-y-3 border-t pt-4">
                   <div className="flex items-center">
@@ -348,7 +372,6 @@ const AgentCard = ({ agent, isActive, onClick, lastMessage }: AgentCardProps) =>
         {agent.type}
       </div>
       
-      {/* Show last agent message if available */}
       {lastMessage && (
         <div className={`text-xs mt-2 line-clamp-2 italic ${
           isActive ? "text-primary-foreground/70" : "text-muted-foreground/70"
@@ -360,7 +383,6 @@ const AgentCard = ({ agent, isActive, onClick, lastMessage }: AgentCardProps) =>
   );
 };
 
-// Helper function to get mock agents for preview
 function getMockAgents(): Agent[] {
   return [
     {
