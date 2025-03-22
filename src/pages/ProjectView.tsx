@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,6 +10,8 @@ import AgentChat from "@/components/project/AgentChat";
 import AgentExplainability from "@/components/project/AgentExplainability";
 import ProjectCreationForm from "@/components/project/ProjectCreationForm";
 import RunAnalysisButton from "@/components/analysis/RunAnalysisButton";
+import ProjectCollaboratorDialog from "@/components/project/ProjectCollaboratorDialog";
+import InsightFeedbackDialog from "@/components/project/InsightFeedbackDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -42,6 +45,12 @@ const ProjectView = () => {
     "grounded-theory", "feminist-theory", "bias-identification"
   ]);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [showCollaboratorDialog, setShowCollaboratorDialog] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState<{
+    id?: string;
+    agentId: string;
+    content: string;
+  } | null>(null);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -67,6 +76,14 @@ const ProjectView = () => {
   
   const handleAgentSelect = (agent: Agent) => {
     setSelectedAgent(agent);
+  };
+
+  const handleInsightFeedback = (insightId: string | undefined, agentId: string, insightContent: string) => {
+    setSelectedInsight({
+      id: insightId,
+      agentId,
+      content: insightContent
+    });
   };
   
   if (id === "new") {
@@ -193,10 +210,13 @@ const ProjectView = () => {
                 <FileText className="h-4 w-4 mr-1.5" />
                 {project.documents} Documents
               </div>
-              <div className="flex items-center text-sm text-muted-foreground">
+              <button 
+                className="flex items-center text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setShowCollaboratorDialog(true)}
+              >
                 <Users className="h-4 w-4 mr-1.5" />
                 {project.collaborators} Collaborators
-              </div>
+              </button>
               <div className="flex flex-wrap gap-1.5">
                 {project.methodologies.map((methodology) => (
                   <Badge
@@ -244,6 +264,7 @@ const ProjectView = () => {
                 <AgentVisualizer 
                   projectId={project.id} 
                   onAgentSelect={handleAgentSelect}
+                  onInsightFeedback={handleInsightFeedback}
                 />
               </TabsContent>
               
@@ -255,7 +276,10 @@ const ProjectView = () => {
               
               <TabsContent value="explain" className="m-0">
                 {selectedAgent ? (
-                  <AgentExplainability agent={selectedAgent} />
+                  <AgentExplainability 
+                    agent={selectedAgent} 
+                    onInsightFeedback={handleInsightFeedback}
+                  />
                 ) : (
                   <div className="glass-card p-8 text-center">
                     <Info className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -327,22 +351,24 @@ const ProjectView = () => {
               <TabsContent value="team" className="m-0">
                 <div className="glass-card p-8">
                   <h3 className="text-xl font-medium mb-6">Team Collaboration</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-6">
                     Manage team members and collaborators for this project.
                   </p>
-                  <div className="flex justify-center items-center py-16">
-                    <div className="text-center">
-                      <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <p className="font-medium">Team Members</p>
-                      <p className="text-sm text-muted-foreground mt-2 mb-6">
-                        {project.collaborators > 0
-                          ? `This project has ${project.collaborators} collaborators`
-                          : "No collaborators yet"}
-                      </p>
-                      <Button>
-                        <Users className="mr-2 h-4 w-4" />
-                        Invite Collaborators
-                      </Button>
+                  
+                  <div className="flex justify-center py-8">
+                    <Button 
+                      size="lg"
+                      onClick={() => setShowCollaboratorDialog(true)}
+                    >
+                      <Users className="mr-2 h-5 w-5" />
+                      Manage Collaborators
+                    </Button>
+                  </div>
+                  
+                  <div className="border-t border-border pt-6 mt-4">
+                    <h4 className="font-medium mb-4">Recent Activity</h4>
+                    <div className="text-center py-6 text-muted-foreground text-sm">
+                      No recent activity to display
                     </div>
                   </div>
                 </div>
@@ -351,6 +377,32 @@ const ProjectView = () => {
           </motion.div>
         </div>
       </main>
+      
+      {/* Collaborator Management Dialog */}
+      {id && id !== "new" && (
+        <ProjectCollaboratorDialog
+          projectId={id}
+          open={showCollaboratorDialog}
+          onOpenChange={setShowCollaboratorDialog}
+        />
+      )}
+      
+      {/* Insight Feedback Dialog */}
+      {selectedInsight && (
+        <InsightFeedbackDialog
+          insightId={selectedInsight.id}
+          agentId={selectedInsight.agentId}
+          insight={selectedInsight.content}
+          open={Boolean(selectedInsight)}
+          onOpenChange={(open) => !open && setSelectedInsight(null)}
+          onFeedbackSaved={() => {
+            toast({
+              title: "Feedback saved",
+              description: "Thank you for your feedback on this insight"
+            });
+          }}
+        />
+      )}
       
       <Footer />
     </PageTransition>
