@@ -1,13 +1,13 @@
 
 import React, { useState } from "react";
-import { Upload, Tag, Trash2, FileText } from "lucide-react";
+import { Upload, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { FileWithPreview } from "@/types/data-upload";
+import FilePreview from "./FilePreview";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FILE_TYPES = [
@@ -189,61 +189,13 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
             
             <div className="space-y-3 max-h-80 overflow-y-auto border rounded-md p-2">
               {uploadedFiles.map((file, index) => (
-                <div 
+                <FilePreview
                   key={`${file.file.name}-${index}`}
-                  className={`border rounded-md p-3 ${file.selected ? "bg-secondary/40" : ""}`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={file.selected}
-                        onChange={() => toggleFileSelection(file.file.name)}
-                        className="mt-1"
-                      />
-                      <div>
-                        <p className="font-medium truncate">{file.file.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {(file.file.size / 1024).toFixed(1)} KB • {file.file.type}
-                        </p>
-                        {file.preview && (
-                          <div className="text-xs text-gray-600 mt-1 bg-gray-100 dark:bg-gray-800 rounded p-1.5 max-h-24 overflow-y-auto">
-                            <pre className="whitespace-pre-wrap">{file.preview}</pre>
-                          </div>
-                        )}
-                        {file.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {file.tags.map((tag, tagIndex) => (
-                              <Badge 
-                                key={tagIndex} 
-                                variant="secondary"
-                                className="text-xs flex items-center gap-1"
-                              >
-                                {tag}
-                                <button
-                                  type="button"
-                                  onClick={() => removeTag(file.file.name, tag)}
-                                  className="text-xs hover:text-destructive transition-colors"
-                                >
-                                  ×
-                                </button>
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(file.file.name)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                  file={file}
+                  onRemove={removeFile}
+                  onToggleSelection={toggleFileSelection}
+                  onRemoveTag={removeTag}
+                />
               ))}
             </div>
           </div>
