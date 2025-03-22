@@ -15,10 +15,39 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Initialize the Supabase client
+// Initialize the Supabase client with proper error handling
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Create a supabase client only if credentials are available
+let supabase = null;
+try {
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  } else {
+    console.warn("Supabase credentials not found. Authentication features will be limited.");
+    // Create a mock client for development/preview
+    supabase = {
+      auth: {
+        getUser: async () => ({ data: { user: null }, error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signOut: async () => ({ error: null })
+      }
+    };
+  }
+} catch (error) {
+  console.error("Error initializing Supabase client:", error);
+  // Fallback to a mock client
+  supabase = {
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: null }),
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signOut: async () => ({ error: null })
+    }
+  };
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

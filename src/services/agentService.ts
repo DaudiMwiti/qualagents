@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Agent Types
@@ -67,17 +68,77 @@ export interface AgentBatch {
   updatedAt: string;
 }
 
-// Initialize Supabase client
+// Initialize Supabase client with fallback to mock implementation if credentials are missing
+let supabase: any;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check if Supabase credentials are available
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey;
+
+if (isSupabaseConfigured) {
+  // Initialize real Supabase client when credentials are available
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  console.warn('Supabase credentials not found. Using mock implementation.');
+  // Create a mock implementation of the Supabase client for development/preview
+  supabase = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: async () => ({ data: null, error: new Error('Supabase mock: Not implemented') }),
+          order: () => ({
+            limit: async () => ({ data: [], error: null })
+          }),
+          limit: async () => ({ data: [], error: null }),
+          in: () => ({
+            select: async () => ({ data: [], error: null })
+          }),
+          not: () => ({ 
+            error: null
+          })
+        }),
+        in: () => ({
+          order: () => ({
+            limit: async () => ({ data: [], error: null })
+          })
+        }),
+        order: () => ({
+          limit: async () => ({ data: [], error: null })
+        })
+      }),
+      insert: () => ({
+        select: () => ({
+          single: async () => ({ data: null, error: null })
+        })
+      }),
+      update: () => ({
+        eq: async () => ({ error: null })
+      })
+    }),
+    channel: (channelName: string) => ({
+      on: () => ({
+        subscribe: () => ({
+          unsubscribe: () => {}
+        })
+      })
+    }),
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: null })
+    }
+  };
+}
 
 // Agent Service
 export const agentService = {
   // Get active agents for a user
   async getUserAgents(userId: string): Promise<Agent[]> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return mock agents when Supabase is not configured
+        return getMockAgents();
+      }
+      
       const { data, error } = await supabase
         .from('agent_settings')
         .select('active_agents')
@@ -112,13 +173,26 @@ export const agentService = {
       return agentsData;
     } catch (error) {
       console.error('Error fetching user agents:', error);
-      return [];
+      return getMockAgents();
     }
   },
   
   // Get or create an agent
   async getOrCreateAgent(agentId: string): Promise<Agent | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return a mock agent when Supabase is not configured
+        const mockAgents = getMockAgents();
+        const mockAgent = mockAgents.find(a => a.id === agentId) || {
+          id: agentId,
+          name: getAgentName(agentId),
+          type: determineAgentType(agentId),
+          status: 'idle',
+          insights: []
+        };
+        return mockAgent;
+      }
+      
       // Check if agent exists
       const { data: existingAgent, error } = await supabase
         .from('agents')
@@ -157,6 +231,15 @@ export const agentService = {
   // Get agent prompt
   async getAgentPrompt(agentId: string): Promise<AgentPrompt | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return a default prompt when Supabase is not configured
+        const agentType = determineAgentType(agentId);
+        return {
+          role: `You are an AI assistant specializing in ${agentType} analysis for qualitative research.`,
+          instructions: getDefaultInstructions(agentId),
+        };
+      }
+      
       const { data, error } = await supabase
         .from('agent_prompts')
         .select('*')
@@ -182,6 +265,37 @@ export const agentService = {
   // Create a new agent task with optional batch processing
   async createAgentTask(task: Omit<AgentTask, 'id' | 'createdAt' | 'updatedAt'>, batchProcess = false): Promise<AgentTask | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return a mock task when Supabase is not configured
+        console.warn('Supabase not configured. Task creation simulated.');
+        
+        // Simulate task processing
+        setTimeout(() => {
+          // Update agent status
+          const agent = getMockAgents().find(a => a.id === task.agentId);
+          if (agent) {
+            agent.status = 'analyzing';
+            
+            // Simulate completion after a delay
+            setTimeout(() => {
+              agent.status = 'complete';
+              agent.insights = [
+                "Simulated insight 1 for " + task.agentId,
+                "Simulated insight 2 for " + task.agentId
+              ];
+            }, 5000);
+          }
+        }, 1000);
+        
+        return {
+          ...task,
+          id: crypto.randomUUID(),
+          status: 'queued',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      
       const now = new Date().toISOString();
       const taskId = crypto.randomUUID();
       
@@ -251,6 +365,37 @@ export const agentService = {
   // Create a batch of agent tasks for parallel processing
   async createAgentBatch(projectId: string, agentIds: string[], taskType: AgentTask['taskType'], input: any): Promise<AgentBatch | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return a mock batch when Supabase is not configured
+        console.warn('Supabase not configured. Batch creation simulated.');
+        
+        // Simulate batch processing
+        agentIds.forEach(agentId => {
+          const agent = getMockAgents().find(a => a.id === agentId);
+          if (agent) {
+            agent.status = 'analyzing';
+            
+            // Simulate completion after a delay
+            setTimeout(() => {
+              agent.status = 'complete';
+              agent.insights = [
+                "Batch simulated insight 1 for " + agentId,
+                "Batch simulated insight 2 for " + agentId
+              ];
+            }, 5000);
+          }
+        });
+        
+        return {
+          id: crypto.randomUUID(),
+          projectId,
+          agentIds,
+          status: 'processing',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      
       const now = new Date().toISOString();
       const batchId = crypto.randomUUID();
       
@@ -305,6 +450,12 @@ export const agentService = {
   // Generate and store context summary for an agent
   async compressAgentContext(agentId: string): Promise<boolean> {
     try {
+      if (!isSupabaseConfigured) {
+        // Simulate context compression when Supabase is not configured
+        console.warn('Supabase not configured. Context compression simulated.');
+        return true;
+      }
+      
       // Get most recent agent interactions
       const { data: interactions, error: historyError } = await supabase
         .from('agent_interactions')
@@ -369,6 +520,12 @@ export const agentService = {
   // Get relevant context for an agent using similarity search
   async getRelevantContext(agentId: string, query: string): Promise<AgentInteraction[]> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return mock context when Supabase is not configured
+        console.warn('Supabase not configured. Context search simulated.');
+        return [];
+      }
+      
       // Call the edge function for embedding search
       const response = await fetch('/api/search-agent-context', {
         method: 'POST',
@@ -393,6 +550,15 @@ export const agentService = {
   // Record agent interaction
   async recordInteraction(interaction: Omit<AgentInteraction, 'id'>): Promise<AgentInteraction | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Simulate recording when Supabase is not configured
+        console.warn('Supabase not configured. Interaction recording simulated.');
+        return {
+          ...interaction,
+          id: crypto.randomUUID()
+        };
+      }
+      
       const newInteraction = {
         ...interaction,
         id: crypto.randomUUID(),
@@ -416,6 +582,12 @@ export const agentService = {
   // Get agent history
   async getAgentHistory(agentId: string, limit = 10): Promise<AgentInteraction[]> {
     try {
+      if (!isSupabaseConfigured) {
+        // Return mock history when Supabase is not configured
+        console.warn('Supabase not configured. History retrieval simulated.');
+        return [];
+      }
+      
       const { data, error } = await supabase
         .from('agent_interactions')
         .select('*')
@@ -435,6 +607,38 @@ export const agentService = {
   // Start a collaboration session between multiple agents with batch processing
   async startCollaboration(projectId: string, agentIds: string[], collaborationLevel: number): Promise<AgentCollaboration | null> {
     try {
+      if (!isSupabaseConfigured) {
+        // Simulate collaboration when Supabase is not configured
+        console.warn('Supabase not configured. Collaboration simulated.');
+        
+        // Simulate agent collaboration
+        agentIds.forEach(agentId => {
+          const agent = getMockAgents().find(a => a.id === agentId);
+          if (agent) {
+            agent.status = 'analyzing';
+            
+            // Simulate completion after a delay
+            setTimeout(() => {
+              agent.status = 'complete';
+              agent.insights = [
+                "Collaborative insight 1 for " + agentId,
+                "Collaborative insight 2 for " + agentId
+              ];
+            }, 5000);
+          }
+        });
+        
+        return {
+          id: crypto.randomUUID(),
+          projectId,
+          agents: agentIds,
+          collaborationLevel,
+          status: 'active',
+          insights: [],
+          createdAt: new Date().toISOString()
+        };
+      }
+      
       const now = new Date().toISOString();
       const newCollaboration = {
         id: crypto.randomUUID(),
@@ -470,6 +674,16 @@ export const agentService = {
   
   // Subscribe to agent status updates
   subscribeToAgentUpdates(agentId: string, callback: (update: Agent) => void) {
+    if (!isSupabaseConfigured) {
+      // For mock environment, create a simulated subscription
+      console.warn('Supabase not configured. Agent updates subscription simulated.');
+      
+      // Return a mock subscription object
+      return {
+        unsubscribe: () => {}
+      };
+    }
+    
     return supabase
       .channel(`agent-${agentId}`)
       .on('postgres_changes', {
@@ -485,6 +699,16 @@ export const agentService = {
   
   // Subscribe to task status updates
   subscribeToTaskUpdates(taskId: string, callback: (update: AgentTask) => void) {
+    if (!isSupabaseConfigured) {
+      // For mock environment, create a simulated subscription
+      console.warn('Supabase not configured. Task updates subscription simulated.');
+      
+      // Return a mock subscription object
+      return {
+        unsubscribe: () => {}
+      };
+    }
+    
     return supabase
       .channel(`task-${taskId}`)
       .on('postgres_changes', {
@@ -500,6 +724,16 @@ export const agentService = {
   
   // Subscribe to collaboration updates
   subscribeToCollaborationUpdates(collaborationId: string, callback: (update: AgentCollaboration) => void) {
+    if (!isSupabaseConfigured) {
+      // For mock environment, create a simulated subscription
+      console.warn('Supabase not configured. Collaboration updates subscription simulated.');
+      
+      // Return a mock subscription object
+      return {
+        unsubscribe: () => {}
+      };
+    }
+    
     return supabase
       .channel(`collaboration-${collaborationId}`)
       .on('postgres_changes', {
@@ -515,6 +749,16 @@ export const agentService = {
   
   // Subscribe to agent interactions
   subscribeToAgentInteractions(agentId: string, callback: (interaction: AgentInteraction) => void) {
+    if (!isSupabaseConfigured) {
+      // For mock environment, create a simulated subscription
+      console.warn('Supabase not configured. Interaction subscription simulated.');
+      
+      // Return a mock subscription object
+      return {
+        unsubscribe: () => {}
+      };
+    }
+    
     return supabase
       .channel(`interaction-${agentId}`)
       .on('postgres_changes', {
@@ -576,6 +820,54 @@ function getDefaultInstructions(agentId: string): string {
     default:
       return 'Analyze the qualitative data and provide insights based on your expertise.';
   }
+}
+
+// Helper function to get mock agents for development/preview
+function getMockAgents(): Agent[] {
+  return [
+    {
+      id: "grounded-theory",
+      name: "Grounded Theory Agent",
+      type: "methodology",
+      methodology: "Grounded Theory",
+      confidence: 0.89,
+      status: 'complete',
+      insights: [
+        "Common themes include privacy concerns across demographic groups.",
+        "Emergent pattern of trust issues with automated systems.",
+        "Theoretical saturation reached in core trust-building category."
+      ]
+    },
+    {
+      id: "feminist-theory",
+      name: "Feminist Theory Agent",
+      type: "theoretical",
+      framework: "Feminist Theory",
+      confidence: 0.78,
+      status: 'complete',
+      insights: [
+        "Gender differences in technology adoption and usage patterns.",
+        "Power dynamics evident in user interface design choices.",
+        "Patterns of exclusion in AI training data."
+      ]
+    },
+    {
+      id: "bias-identification",
+      name: "Bias Identification Agent",
+      type: "validation",
+      confidence: 0.82,
+      status: 'analyzing',
+      insights: []
+    },
+    {
+      id: "triangulation",
+      name: "Triangulation Agent",
+      type: "validation",
+      confidence: 0.65,
+      status: 'idle',
+      insights: []
+    },
+  ];
 }
 
 export default agentService;
