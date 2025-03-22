@@ -36,12 +36,12 @@ const DataUpload = () => {
                 </Link>
               </Button>
               <h1 className="text-2xl md:text-3xl font-semibold">
-                Upload & Preprocess Data
+                Upload Research Data
               </h1>
             </div>
             
             <p className="text-muted-foreground mb-8 max-w-3xl">
-              Upload your research data files for agent analysis. You can organize, tag, and preprocess your data before analysis.
+              Upload your research data files for agent analysis. All documents will be automatically preprocessed for optimal analysis.
             </p>
             
             <DataUploadForm projectId={projectId || ""} />

@@ -12,6 +12,8 @@ interface RunAnalysisButtonProps {
   documentCount: number;
   className?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
+  size?: "default" | "sm" | "lg" | "icon";
+  showLabel?: boolean;
 }
 
 const RunAnalysisButton = ({
@@ -19,7 +21,9 @@ const RunAnalysisButton = ({
   agentIds,
   documentCount,
   className,
-  variant = "default"
+  variant = "default",
+  size = "default",
+  showLabel = true
 }: RunAnalysisButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -47,14 +51,14 @@ const RunAnalysisButton = ({
     setIsLoading(true);
     
     try {
+      toast({
+        title: "Starting analysis",
+        description: "Preparing your documents for analysis..."
+      });
+      
       const batchId = await analysisService.startAnalysis({
         projectId,
         agentIds
-      });
-      
-      toast({
-        title: "Analysis started",
-        description: "Your documents are being analyzed. You'll be notified when it's complete."
       });
       
       // Navigate to the results page
@@ -76,14 +80,18 @@ const RunAnalysisButton = ({
       onClick={handleRunAnalysis}
       disabled={isLoading || documentCount === 0}
       variant={variant}
-      className={className}
+      size={size}
+      className={`${className} relative overflow-hidden group`}
     >
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       ) : (
-        <Play className="mr-2 h-4 w-4" />
+        <Play className={`${showLabel ? "mr-2" : ""} h-4 w-4`} />
       )}
-      Run Analysis
+      {showLabel && (
+        <span>Run Analysis</span>
+      )}
+      <span className="absolute inset-0 bg-primary/10 w-0 group-hover:w-full transition-all duration-300 -z-10 rounded-md"></span>
     </Button>
   );
 };

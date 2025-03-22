@@ -1,15 +1,14 @@
+
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
-import { FileText, Upload, CheckCircle, Loader2 } from "lucide-react";
+import { FileText, Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface DataUploadFormProps {
   projectId: string;
@@ -17,12 +16,10 @@ interface DataUploadFormProps {
 
 const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [step, setStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPreprocessing, setIsPreprocessing] = useState(false);
-  const [preprocessingProgress, setPreprocessingProgress] = useState(0);
-  const [projectName, setProjectName] = useState("My Project");
-  const [projectDescription, setProjectDescription] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setUploadedFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -34,83 +31,115 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
     setUploadedFiles((files) => files.filter((_, i) => i !== index));
   };
 
-  const handleFileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleUpload = async () => {
+    if (uploadedFiles.length === 0) {
+      toast({
+        title: "No files selected",
+        description: "Please add at least one file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    setProgress(0);
     
     try {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + 10;
+          if (newProgress >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 300);
+      
+      // Simulate network request
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      clearInterval(progressInterval);
+      setProgress(100);
+      setIsUploading(false);
       
       toast({
         title: "Files uploaded successfully",
         description: `${uploadedFiles.length} files have been uploaded.`,
-        variant: "default",
       });
       
-      setStep(2);
+      // Start background processing
+      handleProcessing();
     } catch (error) {
+      setIsUploading(false);
       toast({
         title: "Upload failed",
         description: "There was an error uploading your files. Please try again.",
         variant: "destructive",
       });
       console.error("Error uploading files:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handlePreprocessingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsPreprocessing(true);
+  const handleProcessing = async () => {
+    setIsProcessing(true);
+    setProgress(0);
+    
+    // Show processing toast
+    toast({
+      title: "Processing documents...",
+      description: "Your documents are being preprocessed for analysis.",
+    });
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Preprocessing complete",
-        description: "Text preprocessing has been completed successfully.",
-        variant: "default",
-      });
-      
-      setStep(3);
-    } catch (error) {
-      toast({
-        title: "Preprocessing failed",
-        description: "There was an error preprocessing your data. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Error preprocessing:", error);
-    } finally {
-      setIsPreprocessing(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isPreprocessing) {
-      const interval = setInterval(() => {
-        setPreprocessingProgress(prev => {
-          const newProgress = prev + 10;
+      // Simulate processing time with progress
+      const processingInterval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + 5;
           if (newProgress >= 100) {
-            clearInterval(interval);
+            clearInterval(processingInterval);
             return 100;
           }
           return newProgress;
         });
       }, 200);
       
-      return () => clearInterval(interval);
-    } else {
-      setPreprocessingProgress(0);
+      // Apply default preprocessing (stopword removal, stemming, lemmatization)
+      // This would be a real API call in production
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      clearInterval(processingInterval);
+      setProgress(100);
+      
+      toast({
+        title: "Processing complete",
+        description: "Your documents are ready for analysis.",
+      });
+      
+      // Wait a moment before redirecting
+      setTimeout(() => {
+        // Redirect to project page
+        navigate(`/project/${projectId}`);
+      }, 1000);
+    } catch (error) {
+      toast({
+        title: "Processing failed",
+        description: "There was an error preprocessing your data. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error preprocessing:", error);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [isPreprocessing]);
+  };
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-4">Data Upload for Project: {projectId}</h1>
+      <h2 className="text-2xl font-bold mb-4">Upload Documents</h2>
       
-      {step === 1 && (
-        <form onSubmit={handleFileSubmit} className="space-y-4">
+      {!isUploading && !isProcessing && (
+        <>
           <div {...getRootProps()} className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isDragActive ? 'border-primary' : 'border-border'}`}>
             <input {...getInputProps()} />
             <Upload className="mx-auto h-6 w-6 text-muted-foreground mb-2" />
@@ -121,8 +150,8 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
           
           {uploadedFiles.length > 0 && (
             <div className="mt-4">
-              <h2 className="text-lg font-semibold mb-2">Uploaded Files</h2>
-              <ul>
+              <h3 className="text-lg font-semibold mb-2">Selected Files</h3>
+              <ul className="space-y-2">
                 {uploadedFiles.map((file, index) => (
                   <li key={index} className="flex items-center justify-between py-2 px-4 rounded-md bg-secondary">
                     <div className="flex items-center">
@@ -138,68 +167,48 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
             </div>
           )}
           
-          <Button type="submit" disabled={isSubmitting || uploadedFiles.length === 0} className="w-full">
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              "Upload Files"
-            )}
-          </Button>
-        </form>
+          <Alert className="mt-6">
+            <AlertTitle>Documents will be preprocessed automatically</AlertTitle>
+            <AlertDescription>
+              Files will be automatically processed with standard text cleaning, including stopword removal, 
+              stemming, and lemmatization for optimal analysis.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="mt-6">
+            <Button 
+              onClick={handleUpload} 
+              disabled={uploadedFiles.length === 0} 
+              className="w-full"
+            >
+              Upload & Process Documents
+            </Button>
+          </div>
+        </>
       )}
       
-      {step === 2 && (
-        <form onSubmit={handlePreprocessingSubmit} className="space-y-4">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold">Text Preprocessing</h2>
-            <p className="text-sm text-muted-foreground">
-              Configure the text preprocessing steps for your uploaded documents.
-            </p>
-          </div>
-          
+      {(isUploading || isProcessing) && (
+        <div className="mt-4 space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="remove-stopwords">
-              <Input type="checkbox" id="remove-stopwords" className="mr-2" />
-              Remove Stopwords
-            </Label>
-            <Label htmlFor="stemming">
-              <Input type="checkbox" id="stemming" className="mr-2" />
-              Apply Stemming
-            </Label>
-            <Label htmlFor="lemmatization">
-              <Input type="checkbox" id="lemmatization" className="mr-2" />
-              Apply Lemmatization
-            </Label>
+            <div className="flex items-center justify-between text-sm">
+              <span>
+                {isUploading ? 'Uploading...' : 'Processing documents...'}
+              </span>
+              <span>{progress}%</span>
+            </div>
+            <Progress value={progress} />
           </div>
           
-          <Button type="submit" disabled={isPreprocessing} className="w-full">
-            {isPreprocessing ? (
-              <div className="flex items-center justify-center">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Preprocessing...
-              </div>
-            ) : (
-              "Start Preprocessing"
-            )}
-          </Button>
-          
-          {isPreprocessing && (
-            <Progress value={preprocessingProgress} className="mt-4" />
-          )}
-        </form>
-      )}
-      
-      {step === 3 && (
-        <div className="text-center">
-          <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-3" />
-          <h2 className="text-lg font-semibold">Upload Complete!</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            Your data has been successfully uploaded and preprocessed.
-          </p>
-          <Button onClick={() => setStep(1)}>Upload More Files</Button>
+          <div className="flex justify-center">
+            <div className="text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
+              <p className="text-sm text-muted-foreground">
+                {isUploading 
+                  ? "Uploading your documents... Please wait." 
+                  : "Processing your documents for analysis. This may take a moment..."}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

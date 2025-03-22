@@ -186,12 +186,6 @@ const ProjectView = () => {
                     Upload Data
                   </Link>
                 </Button>
-                <RunAnalysisButton
-                  projectId={project.id}
-                  agentIds={activeAgents}
-                  documentCount={project.documents}
-                  className="h-9"
-                />
                 <Button 
                   asChild
                   variant="outline"
@@ -204,6 +198,29 @@ const ProjectView = () => {
                 </Button>
               </div>
             </div>
+            
+            {project.documents > 0 && (
+              <Alert variant="info" className="mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                  <div>
+                    <AlertTitle>Ready for Analysis</AlertTitle>
+                    <AlertDescription>
+                      {project.documents} document{project.documents !== 1 ? 's' : ''} uploaded and preprocessed. 
+                      <span className="block sm:inline sm:ml-1">
+                        Run analysis to generate insights with your selected agents.
+                      </span>
+                    </AlertDescription>
+                  </div>
+                  <RunAnalysisButton
+                    projectId={project.id}
+                    agentIds={activeAgents}
+                    documentCount={project.documents}
+                    className="mt-4 sm:mt-0 w-full sm:w-auto"
+                    size="lg"
+                  />
+                </div>
+              </Alert>
+            )}
             
             <div className="flex flex-wrap gap-6 mt-4 mb-8">
               <div className="flex items-center text-sm text-muted-foreground">
@@ -231,6 +248,22 @@ const ProjectView = () => {
             </div>
             
             <Separator className="mb-8" />
+            
+            {activeAgents.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-medium mb-4">Active Analysis Agents</h2>
+                <div className="flex flex-wrap gap-2">
+                  {activeAgents.map(agentId => (
+                    <Badge key={agentId} variant="secondary" className="py-1.5 px-3">
+                      <Brain className="h-3.5 w-3.5 mr-1.5" />
+                      {agentId.split('-').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <Tabs defaultValue="agents">
               <TabsList className="mb-8 bg-secondary/50">
