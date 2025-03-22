@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -80,6 +81,8 @@ const AgentSettings = () => {
   const [isAgentMemoryEnabled, setIsAgentMemoryEnabled] = useState(true);
   const [isAgentGoalsEnabled, setIsAgentGoalsEnabled] = useState(true);
   const [isAgentConstraintsEnabled, setIsAgentConstraintsEnabled] = useState(true);
+  
+  // Agent capabilities
   const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
   const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
   const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
@@ -93,6 +96,8 @@ const AgentSettings = () => {
   const [isAgentRiskAssessmentEnabled, setIsAgentRiskAssessmentEnabled] = useState(true);
   const [isAgentResourceManagementEnabled, setIsAgentResourceManagementEnabled] = useState(true);
   const [isAgentTimeManagementEnabled, setIsAgentTimeManagementEnabled] = useState(true);
+  
+  // Agent skills
   const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
   const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
   const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
@@ -179,78 +184,14 @@ const AgentSettings = () => {
   const [isAgentMonitoringSkillsEnabled, setIsAgentMonitoringSkillsEnabled] = useState(true);
   const [isAgentEvaluationSkillsEnabled, setIsAgentEvaluationSkillsEnabled] = useState(true);
   const [isAgentAdaptationSkillsEnabled, setIsAgentAdaptationSkillsEnabled] = useState(true);
-  const [isAgentImprovementSkillsEnabled, setIsAgentImprovementSkillsEnabled] = useState(true);
-  const [isAgentLearningSkillsEnabled, setIsAgentLearningSkillsEnabled] = useState(true);
-  const [isAgentDevelopmentSkillsEnabled, setIsAgentDevelopmentSkillsEnabled] = useState(true);
-  const [isAgentGrowthSkillsEnabled, setIsAgentGrowthSkillsEnabled] = useState(true);
-  const [isAgentTransformationSkillsEnabled, setIsAgentTransformationSkillsEnabled] = useState(true);
-  const [isAgentImpactSkillsEnabled, setIsAgentImpactSkillsEnabled] = useState(true);
-  const [isAgentLegacySkillsEnabled, setIsAgentLegacySkillsEnabled] = useState(true);
-  const [isAgentPurposeSkillsEnabled, setIsAgentPurposeSkillsEnabled] = useState(true);
-  const [isAgentMeaningSkillsEnabled, setIsAgentMeaningSkillsEnabled] = useState(true);
-  const [isAgentFulfillmentSkillsEnabled, setIsAgentFulfillmentSkillsEnabled] = useState(true);
-  const [isAgentHappinessSkillsEnabled, setIsAgentHappinessSkillsEnabled] = useState(true);
-  const [isAgentWellbeingSkillsEnabled, setIsAgentWellbeingSkillsEnabled] = useState(true);
-  const [isAgentBelongingSkillsEnabled, setIsAgentBelongingSkillsEnabled] = useState(true);
-  const [isAgentEquitySkillsEnabled, setIsAgentEquitySkillsEnabled] = useState(true);
-  const [isAgentDiversitySkillsEnabled, setIsAgentDiversitySkillsEnabled] = useState(true);
-  const [isAgentInclusivitySkillsEnabled, setIsAgentInclusivitySkillsEnabled] = useState(true);
-  const [isAgentAcceptanceSkillsEnabled, setIsAgentAcceptanceSkillsEnabled] = useState(true);
-  const [isAgentToleranceSkillsEnabled, setIsAgentToleranceSkillsEnabled] = useState(true);
-  const [isAgentRespectSkillsEnabled, setIsAgentRespectSkillsEnabled] = useState(true);
-  const [isAgentLoyaltySkillsEnabled, setIsAgentLoyaltySkillsEnabled] = useState(true);
-  const [isAgentAccountabilitySkillsEnabled, setIsAgentAccountabilitySkillsEnabled] = useState(true);
-  const [isAgentResponsibilitySkillsEnabled, setIsAgentResponsibilitySkillsEnabled] = useState(true);
-  const [isAgentIntegritySkillsEnabled, setIsAgentIntegritySkillsEnabled] = useState(true);
-  const [isAgentHonestySkillsEnabled, setIsAgentHonestySkillsEnabled] = useState(true);
-  const [isAgentPatienceSkillsEnabled, setIsAgentPatienceSkillsEnabled] = useState(true);
-  const [isAgentPerseveranceSkillsEnabled, setIsAgentPerseveranceSkillsEnabled] = useState(true);
-  const [isAgentCourageSkillsEnabled, setIsAgentCourageSkillsEnabled] = useState(true);
-  const [isAgentJusticeSkillsEnabled, setIsAgentJusticeSkillsEnabled] = useState(true);
-  const [isAgentServiceSkillsEnabled, setIsAgentServiceSkillsEnabled] = useState(true);
-  const [isAgentGenerositySkillsEnabled, setIsAgentGenerositySkillsEnabled] = useState(true);
-  const [isAgentKindnessSkillsEnabled, setIsAgentKindnessSkillsEnabled] = useState(true);
-  const [isAgentCompassionSkillsEnabled, setIsAgentCompassionSkillsEnabled] = useState(true);
-  const [isAgentForgivenessSkillsEnabled, setIsAgentForgivenessSkillsEnabled] = useState(true);
-  const [isAgentGratitudeSkillsEnabled, setIsAgentGratitudeSkillsEnabled] = useState(true);
-  const [isAgentHumilitySkillsEnabled, setIsAgentHumilitySkillsEnabled] = useState(true);
-  const [isAgentOpenMindednessSkillsEnabled, setIsAgentOpenMindednessSkillsEnabled] = useState(true);
-  const [isAgentCuriositySkillsEnabled, setIsAgentCuriositySkillsEnabled] = useState(true);
-  const [isAgentOptimismSkillsEnabled, setIsAgentOptimismSkillsEnabled] = useState(true);
-  const [isAgentResilienceSkillsEnabled, setIsAgentResilienceSkillsEnabled] = useState(true);
-  const [isAgentMotivationSkillsEnabled, setIsAgentMotivationSkillsEnabled] = useState(true);
-  const [isAgentSelfRegulationSkillsEnabled, setIsAgentSelfRegulationSkillsEnabled] = useState(true);
-  const [isAgentSelfAwarenessSkillsEnabled, setIsAgentSelfAwarenessSkillsEnabled] = useState(true);
-  const [isAgentSocialAwarenessSkillsEnabled, setIsAgentSocialAwarenessSkillsEnabled] = useState(true);
-  const [isAgentEmpathySkillsEnabled, setIsAgentEmpathySkillsEnabled] = useState(true);
-  const [isAgentEmotionalRegulationSkillsEnabled, setIsAgentEmotionalRegulationSkillsEnabled] = useState(true);
-  const [isAgentCulturalSensitivitySkillsEnabled, setIsAgentCulturalSensitivitySkillsEnabled] = useState(true);
-  const [isAgentConflictResolutionSkillsEnabled, setIsAgentConflictResolutionSkillsEnabled] = useState(true);
-  const [isAgentStressManagementSkillsEnabled, setIsAgentStressManagementSkillsEnabled] = useState(true);
-  const [isAgentAdaptabilitySkillsEnabled, setIsAgentAdaptabilitySkillsEnabled] = useState(true);
-  const [isAgentTeamworkSkillsEnabled, setIsAgentTeamworkSkillsEnabled] = useState(true);
-  const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
-  const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
-  const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
-  const [isAgentTimeManagementSkillsEnabled, setIsAgentTimeManagementSkillsEnabled] = useState(true);
-  const [isAgentResourceManagementSkillsEnabled, setIsAgentResourceManagementSkillsEnabled] = useState(true);
-  const [isAgentRiskAssessmentSkillsEnabled, setIsAgentRiskAssessmentSkillsEnabled] = useState(true);
-  const [isAgentDecisionMakingSkillsEnabled, setIsAgentDecisionMakingSkillsEnabled] = useState(true);
-  const [isAgentComplexProblemSolvingSkillsEnabled, setIsAgentComplexProblemSolvingSkillsEnabled] = useState(true);
-  const [isAgentLearningFromFeedbackEnabled, setIsAgentLearningFromFeedbackEnabled] = useState(true);
-  const [isAgentCriticalThinkingEnhancementEnabled, setIsAgentCriticalThinkingEnhancementEnabled] = useState(true);
-  const [isAgentCreativityEnhancementEnabled, setIsAgentCreativityEnhancementEnabled] = useState(true);
-  const [isAgentEthicalFrameworkEnabled, setIsAgentEthicalFrameworkEnabled] = useState(true);
-  const [isAgentEmotionalIntelligenceEnabled, setIsAgentEmotionalIntelligenceEnabled] = useState(true);
-  const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
-  const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
-  const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
+  
   const supabase = useSupabaseClient();
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const fetchedAgents = await agentService.getAgents(supabase);
+        // Update from getAgents to getAll method
+        const fetchedAgents = await agentService.getAll(supabase);
         setAgents(fetchedAgents);
       } catch (error) {
         console.error("Error fetching agents:", error);
@@ -467,7 +408,127 @@ const AgentSettings = () => {
 
   return (
     <PageTransition>
-      <div>Agent Settings Content</div>
+      <Navbar />
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-6">Agent Settings</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Agent List</CardTitle>
+                <CardDescription>
+                  Select an agent to view and edit settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {agents.length > 0 ? (
+                    agents.map((agent) => (
+                      <Button
+                        key={agent.id}
+                        variant={selectedAgent?.id === agent.id ? "default" : "outline"}
+                        className="w-full justify-start"
+                        onClick={() => handleAgentSelect(agent)}
+                      >
+                        <LucideBot className="mr-2 h-4 w-4" />
+                        {agent.name}
+                      </Button>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      No agents found
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create New Agent
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div className="md:col-span-2">
+            {selectedAgent ? (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>{selectedAgent.name}</CardTitle>
+                    <CardDescription>
+                      Agent ID: {selectedAgent.id}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {isEditing ? (
+                      <>
+                        <Button variant="outline" size="sm" onClick={handleCancelClick}>
+                          <X className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
+                        <Button size="sm">
+                          <Save className="mr-2 h-4 w-4" />
+                          Save
+                        </Button>
+                      </>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={handleEditClick}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Basic Settings</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="agent-name">Name</Label>
+                        <Input
+                          id="agent-name"
+                          value={newAgentName}
+                          onChange={(e) => setNewAgentName(e.target.value)}
+                          disabled={!isEditing}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="agent-description">Description</Label>
+                        <Textarea
+                          id="agent-description"
+                          value={newAgentDescription}
+                          onChange={(e) => setNewAgentDescription(e.target.value)}
+                          disabled={!isEditing}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="agent-model">Model</Label>
+                        <Input
+                          id="agent-model"
+                          value={newAgentModel}
+                          onChange={(e) => setNewAgentModel(e.target.value)}
+                          disabled={!isEditing}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center h-64">
+                  <FileCog className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-center text-muted-foreground">
+                    Select an agent from the list to view and edit settings
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
     </PageTransition>
   );
 };
