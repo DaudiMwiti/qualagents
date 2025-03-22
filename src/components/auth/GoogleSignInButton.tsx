@@ -23,22 +23,28 @@ const GoogleSignInButton = ({
     try {
       setIsLoading(true);
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Starting Google sign in process...");
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}${redirectTo}`,
           queryParams: {
             prompt: 'select_account',
+            access_type: 'offline',
           },
         },
       });
 
       if (error) {
+        console.error("Google auth error:", error);
         toast({
           title: "Authentication error",
           description: error.message,
           variant: "destructive",
         });
+      } else if (data) {
+        console.log("Google auth initiated:", data);
       }
     } catch (error) {
       console.error("Google sign in error:", error);

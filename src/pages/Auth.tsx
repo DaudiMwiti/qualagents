@@ -18,15 +18,27 @@ const Auth = () => {
   const isSignUp = location.pathname === "/signup";
 
   useEffect(() => {
+    console.log("Auth page - User state:", user ? "Logged in" : "Not logged in");
+    console.log("Auth page - Session loading:", isSessionLoading);
+    
     // Only redirect if session is loaded and we have a user
     if (!isSessionLoading) {
       if (user) {
+        console.log("User is logged in, redirecting to dashboard");
         // User is logged in, redirect to dashboard
         navigate("/dashboard");
       }
       setIsLoading(false);
     }
   }, [user, navigate, isSessionLoading]);
+
+  useEffect(() => {
+    // Check for authentication information in the URL (for OAuth callbacks)
+    if (window.location.hash && window.location.hash.includes("access_token")) {
+      console.log("OAuth callback detected");
+      setIsLoading(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Show error if there was a problem with the session
