@@ -33,6 +33,8 @@ const RunAnalysisButton = ({
   
   // Check for documents in localStorage if none provided via props
   useEffect(() => {
+    if (!projectId) return;
+    
     if (propDocumentCount === undefined || propDocumentCount === 0) {
       try {
         const documentData = localStorage.getItem(`project_${projectId}_documents`);
@@ -45,10 +47,21 @@ const RunAnalysisButton = ({
       } catch (e) {
         console.error("Error checking document count:", e);
       }
+    } else {
+      setActualDocumentCount(propDocumentCount);
     }
   }, [projectId, propDocumentCount]);
   
   const handleRunAnalysis = async () => {
+    if (!projectId) {
+      toast({
+        variant: "destructive",
+        title: "Project ID missing",
+        description: "Cannot run analysis without a project ID."
+      });
+      return;
+    }
+    
     if (actualDocumentCount === 0) {
       toast({
         variant: "destructive",
@@ -97,7 +110,7 @@ const RunAnalysisButton = ({
       
       // Dismiss the loading toast and show error
       sonnerToast.error("Error starting analysis", {
-        description: "There was a problem starting the analysis. Please try again.",
+        description: error instanceof Error ? error.message : "There was a problem starting the analysis. Please try again.",
         id: "analysis-start"
       });
     } finally {

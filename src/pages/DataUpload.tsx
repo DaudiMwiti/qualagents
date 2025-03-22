@@ -23,7 +23,7 @@ const DataUpload = () => {
       if (documentData) {
         try {
           const data = JSON.parse(documentData);
-          setHasExistingDocuments(true);
+          setHasExistingDocuments(data && data.count > 0);
           setDocumentCount(data.count || 0);
         } catch (e) {
           console.error("Error parsing document data:", e);
@@ -31,6 +31,24 @@ const DataUpload = () => {
       }
     }
   }, [projectId]);
+
+  const handleUploadComplete = (count: number) => {
+    setDocumentCount(count);
+    setHasExistingDocuments(count > 0);
+    
+    // Save the document count to localStorage
+    if (projectId) {
+      localStorage.setItem(`project_${projectId}_documents`, JSON.stringify({ count }));
+    }
+  };
+
+  const handleClearDocuments = () => {
+    if (projectId) {
+      localStorage.removeItem(`project_${projectId}_documents`);
+      setHasExistingDocuments(false);
+      setDocumentCount(0);
+    }
+  };
 
   return (
     <PageTransition>
@@ -79,11 +97,7 @@ const DataUpload = () => {
                     </Button>
                     <Button 
                       size="sm"
-                      onClick={() => {
-                        localStorage.removeItem(`project_${projectId}_documents`);
-                        setHasExistingDocuments(false);
-                        setDocumentCount(0);
-                      }}
+                      onClick={handleClearDocuments}
                     >
                       Upload New Documents
                     </Button>
@@ -93,7 +107,10 @@ const DataUpload = () => {
             )}
             
             {(!hasExistingDocuments || documentCount === 0) && (
-              <DataUploadForm projectId={projectId || ""} />
+              <DataUploadForm 
+                projectId={projectId || ""} 
+                onUploadComplete={handleUploadComplete}
+              />
             )}
           </motion.div>
         </div>

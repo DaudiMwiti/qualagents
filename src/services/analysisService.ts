@@ -1,6 +1,6 @@
-
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { runLangGraphAnalysis } from "../api/runLangGraph";
 
 export interface AnalysisRequest {
   projectId: string;
@@ -50,8 +50,31 @@ class AnalysisService {
     console.log("Starting analysis for project:", request.projectId);
     console.log("Selected agents:", request.agentIds);
     
-    // In a real implementation, this would call a Supabase function
-    // to start the analysis process
+    // Check if we should use the LangGraph backend
+    const useLangGraph = process.env.USE_LANGGRAPH_BACKEND === 'true';
+    
+    if (useLangGraph) {
+      try {
+        // Generate a temporary user ID for demo purposes
+        const userId = `user-${Math.random().toString(36).substring(2, 15)}`;
+        
+        // Call the LangGraph backend
+        const result = await runLangGraphAnalysis({
+          projectId: request.projectId,
+          userId,
+          agentIds: request.agentIds
+        });
+        
+        // Store the result in localStorage for retrieval
+        this.storeAnalysisResult(result.batchId, request, result);
+        
+        return result.batchId;
+      } catch (error) {
+        console.error("Error with LangGraph analysis:", error);
+        // Fall back to the mock implementation
+        console.log("Falling back to mock implementation...");
+      }
+    }
     
     // For demo purposes, we'll generate a random batch ID
     const batchId = `batch-${Math.random().toString(36).substring(2, 15)}`;
@@ -68,6 +91,55 @@ class AnalysisService {
     this.processAnalysisBatch(batchId, request);
     
     return batchId;
+  }
+  
+  private storeAnalysisResult(batchId: string, request: AnalysisRequest, result: any): void {
+    // Transform the LangGraph result into the expected format
+    const analysisData = {
+      ...request,
+      status: 'completed',
+      startedAt: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
+      completedAt: new Date().toISOString(),
+      progress: 100,
+      results: {
+        agentResults: this.transformToAgentResults(result.insights, request.agentIds),
+        insights: result.insights,
+        documentStats: {
+          totalProcessed: 3, // Mock value
+          totalChunks: 9,    // Mock value
+          averageChunkLength: 1000 // Mock value
+        },
+        summary: result.summary
+      }
+    };
+    
+    localStorage.setItem(`analysis_${batchId}`, JSON.stringify(analysisData));
+  }
+  
+  private transformToAgentResults(insights: any[], agentIds: string[]): Record<string, AgentResult[]> {
+    const results: Record<string, AgentResult[]> = {};
+    
+    // Initialize results for each agent
+    agentIds.forEach(agentId => {
+      results[agentId] = [];
+    });
+    
+    // Group insights by agent
+    insights.forEach(insight => {
+      if (insight.agentId && results[insight.agentId]) {
+        results[insight.agentId].push({
+          id: insight.id,
+          text: insight.text,
+          confidence: insight.relevance / 100,
+          metadata: {
+            relevanceScore: insight.relevance / 100,
+            methodology: insight.methodology
+          }
+        });
+      }
+    });
+    
+    return results;
   }
   
   private async processAnalysisBatch(batchId: string, request: AnalysisRequest): Promise<void> {
