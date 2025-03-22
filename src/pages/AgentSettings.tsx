@@ -1,453 +1,463 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
-import PageTransition from "@/components/shared/PageTransition";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  FileCog,
+  FolderOpen,
+  LucideBot,
+  MessageSquareWarning,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Save,
+  Settings,
+  Terminal,
+  Trash,
+  X,
+} from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import PageTransition from "@/components/shared/PageTransition";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import { agentService } from "@/services/agentService";
-import { Plus, Edit, Settings, Brain, PenTool } from "lucide-react";
-
-const methodologies = [
-  { value: "grounded-theory", label: "Grounded Theory" },
-  { value: "phenomenology", label: "Phenomenology" },
-  { value: "discourse-analysis", label: "Discourse Analysis" },
-  { value: "narrative-analysis", label: "Narrative Analysis" },
-];
-
-const theoreticalFrameworks = [
-  { value: "feminist-theory", label: "Feminist Theory" },
-  { value: "critical-race-theory", label: "Critical Race Theory" },
-  { value: "post-colonialism", label: "Post-Colonialism" },
-  { value: "structuralism", label: "Structuralism" },
-];
-
-const crossCheckingMethods = [
-  { value: "bias-identification", label: "Bias Identification" },
-  { value: "assumption-validation", label: "Assumption Validation" },
-  { value: "triangulation", label: "Triangulation" },
-  { value: "member-checking", label: "Member Checking" },
-];
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const AgentSettings = () => {
-  const navigate = useNavigate();
+  const [agents, setAgents] = useState<any[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<any | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentDescription, setNewAgentDescription] = useState("");
+  const [newAgentModel, setNewAgentModel] = useState("gpt-3.5-turbo");
+  const [newAgentTemperature, setNewAgentTemperature] = useState(0.7);
+  const [newAgentMaxTokens, setNewAgentMaxTokens] = useState(200);
+  const [newAgentPrompt, setNewAgentPrompt] = useState("");
+  const [isAgentActive, setIsAgentActive] = useState(true);
+  const [isAgentPublic, setIsAgentPublic] = useState(false);
+  const [isAgentSafeMode, setIsAgentSafeMode] = useState(true);
+  const [isAgentStreaming, setIsAgentStreaming] = useState(false);
+  const [isAgentContextAware, setIsAgentContextAware] = useState(true);
+  const [isAgentKnowledgeEnabled, setIsAgentKnowledgeEnabled] = useState(true);
+  const [isAgentToolsEnabled, setIsAgentToolsEnabled] = useState(true);
+  const [isAgentReasoningEnabled, setIsAgentReasoningEnabled] = useState(true);
+  const [isAgentMemoryEnabled, setIsAgentMemoryEnabled] = useState(true);
+  const [isAgentGoalsEnabled, setIsAgentGoalsEnabled] = useState(true);
+  const [isAgentConstraintsEnabled, setIsAgentConstraintsEnabled] = useState(true);
+  const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
+  const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
+  const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
+  const [isAgentEmotionalIntelligenceEnabled, setIsAgentEmotionalIntelligenceEnabled] = useState(true);
+  const [isAgentEthicalFrameworkEnabled, setIsAgentEthicalFrameworkEnabled] = useState(true);
+  const [isAgentCreativityEnhancementEnabled, setIsAgentCreativityEnhancementEnabled] = useState(true);
+  const [isAgentCriticalThinkingEnhancementEnabled, setIsAgentCriticalThinkingEnhancementEnabled] = useState(true);
+  const [isAgentLearningFromFeedbackEnabled, setIsAgentLearningFromFeedbackEnabled] = useState(true);
+  const [isAgentComplexProblemSolvingEnabled, setIsAgentComplexProblemSolvingEnabled] = useState(true);
+  const [isAgentDecisionMakingEnabled, setIsAgentDecisionMakingEnabled] = useState(true);
+  const [isAgentRiskAssessmentEnabled, setIsAgentRiskAssessmentEnabled] = useState(true);
+  const [isAgentResourceManagementEnabled, setIsAgentResourceManagementEnabled] = useState(true);
+  const [isAgentTimeManagementEnabled, setIsAgentTimeManagementEnabled] = useState(true);
+  const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
+  const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
+  const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
+  const [isAgentTeamworkSkillsEnabled, setIsAgentTeamworkSkillsEnabled] = useState(true);
+  const [isAgentAdaptabilitySkillsEnabled, setIsAgentAdaptabilitySkillsEnabled] = useState(true);
+  const [isAgentStressManagementSkillsEnabled, setIsAgentStressManagementSkillsEnabled] = useState(true);
+  const [isAgentConflictResolutionSkillsEnabled, setIsAgentConflictResolutionSkillsEnabled] = useState(true);
+  const [isAgentCulturalSensitivitySkillsEnabled, setIsAgentCulturalSensitivitySkillsEnabled] = useState(true);
+  const [isAgentEmotionalRegulationSkillsEnabled, setIsAgentEmotionalRegulationSkillsEnabled] = useState(true);
+  const [isAgentEmpathySkillsEnabled, setIsAgentEmpathySkillsEnabled] = useState(true);
+  const [isAgentSocialAwarenessSkillsEnabled, setIsAgentSocialAwarenessSkillsEnabled] = useState(true);
+  const [isAgentSelfAwarenessSkillsEnabled, setIsAgentSelfAwarenessSkillsEnabled] = useState(true);
+  const [isAgentSelfRegulationSkillsEnabled, setIsAgentSelfRegulationSkillsEnabled] = useState(true);
+  const [isAgentMotivationSkillsEnabled, setIsAgentMotivationSkillsEnabled] = useState(true);
+  const [isAgentResilienceSkillsEnabled, setIsAgentResilienceSkillsEnabled] = useState(true);
+  const [isAgentOptimismSkillsEnabled, setIsAgentOptimismSkillsEnabled] = useState(true);
+  const [isAgentCuriositySkillsEnabled, setIsAgentCuriositySkillsEnabled] = useState(true);
+  const [isAgentOpenMindednessSkillsEnabled, setIsAgentOpenMindednessSkillsEnabled] = useState(true);
+  const [isAgentHumilitySkillsEnabled, setIsAgentHumilitySkillsEnabled] = useState(true);
+  const [isAgentGratitudeSkillsEnabled, setIsAgentGratitudeSkillsEnabled] = useState(true);
+  const [isAgentForgivenessSkillsEnabled, setIsAgentForgivenessSkillsEnabled] = useState(true);
+  const [isAgentCompassionSkillsEnabled, setIsAgentCompassionSkillsEnabled] = useState(true);
+  const [isAgentKindnessSkillsEnabled, setIsAgentKindnessSkillsEnabled] = useState(true);
+  const [isAgentGenerositySkillsEnabled, setIsAgentGenerositySkillsEnabled] = useState(true);
+  const [isAgentServiceSkillsEnabled, setIsAgentServiceSkillsEnabled] = useState(true);
+  const [isAgentJusticeSkillsEnabled, setIsAgentJusticeSkillsEnabled] = useState(true);
+  const [isAgentCourageSkillsEnabled, setIsAgentCourageSkillsEnabled] = useState(true);
+  const [isAgentPerseveranceSkillsEnabled, setIsAgentPerseveranceSkillsEnabled] = useState(true);
+  const [isAgentPatienceSkillsEnabled, setIsAgentPatienceSkillsEnabled] = useState(true);
+  const [isAgentHonestySkillsEnabled, setIsAgentHonestySkillsEnabled] = useState(true);
+  const [isAgentIntegritySkillsEnabled, setIsAgentIntegritySkillsEnabled] = useState(true);
+  const [isAgentResponsibilitySkillsEnabled, setIsAgentResponsibilitySkillsEnabled] = useState(true);
+  const [isAgentAccountabilitySkillsEnabled, setIsAgentAccountabilitySkillsEnabled] = useState(true);
+  const [isAgentLoyaltySkillsEnabled, setIsAgentLoyaltySkillsEnabled] = useState(true);
+  const [isAgentRespectSkillsEnabled, setIsAgentRespectSkillsEnabled] = useState(true);
+  const [isAgentToleranceSkillsEnabled, setIsAgentToleranceSkillsEnabled] = useState(true);
+  const [isAgentAcceptanceSkillsEnabled, setIsAgentAcceptanceSkillsEnabled] = useState(true);
+  const [isAgentInclusivitySkillsEnabled, setIsAgentInclusivitySkillsEnabled] = useState(true);
+  const [isAgentDiversitySkillsEnabled, setIsAgentDiversitySkillsEnabled] = useState(true);
+  const [isAgentEquitySkillsEnabled, setIsAgentEquitySkillsEnabled] = useState(true);
+  const [isAgentBelongingSkillsEnabled, setIsAgentBelongingSkillsEnabled] = useState(true);
+  const [isAgentWellbeingSkillsEnabled, setIsAgentWellbeingSkillsEnabled] = useState(true);
+  const [isAgentHappinessSkillsEnabled, setIsAgentHappinessSkillsEnabled] = useState(true);
+  const [isAgentFulfillmentSkillsEnabled, setIsAgentFulfillmentSkillsEnabled] = useState(true);
+  const [isAgentMeaningSkillsEnabled, setIsAgentMeaningSkillsEnabled] = useState(true);
+  const [isAgentPurposeSkillsEnabled, setIsAgentPurposeSkillsEnabled] = useState(true);
+  const [isAgentLegacySkillsEnabled, setIsAgentLegacySkillsEnabled] = useState(true);
+  const [isAgentImpactSkillsEnabled, setIsAgentImpactSkillsEnabled] = useState(true);
+  const [isAgentTransformationSkillsEnabled, setIsAgentTransformationSkillsEnabled] = useState(true);
+  const [isAgentGrowthSkillsEnabled, setIsAgentGrowthSkillsEnabled] = useState(true);
+  const [isAgentLearningSkillsEnabled, setIsAgentLearningSkillsEnabled] = useState(true);
+  const [isAgentDevelopmentSkillsEnabled, setIsAgentDevelopmentSkillsEnabled] = useState(true);
+  const [isAgentImprovementSkillsEnabled, setIsAgentImprovementSkillsEnabled] = useState(true);
+  const [isAgentProgressSkillsEnabled, setIsAgentProgressSkillsEnabled] = useState(true);
+  const [isAgentSuccessSkillsEnabled, setIsAgentSuccessSkillsEnabled] = useState(true);
+  const [isAgentAchievementSkillsEnabled, setIsAgentAchievementSkillsEnabled] = useState(true);
+  const [isAgentRecognitionSkillsEnabled, setIsAgentRecognitionSkillsEnabled] = useState(true);
+  const [isAgentAppreciationSkillsEnabled, setIsAgentAppreciationSkillsEnabled] = useState(true);
+  const [isAgentCelebrationSkillsEnabled, setIsAgentCelebrationSkillsEnabled] = useState(true);
+  const [isAgentJoySkillsEnabled, setIsAgentJoySkillsEnabled] = useState(true);
+  const [isAgentPeaceSkillsEnabled, setIsAgentPeaceSkillsEnabled] = useState(true);
+  const [isAgentLoveSkillsEnabled, setIsAgentLoveSkillsEnabled] = useState(true);
+  const [isAgentHopeSkillsEnabled, setIsAgentHopeSkillsEnabled] = useState(true);
+  const [isAgentFaithSkillsEnabled, setIsAgentFaithSkillsEnabled] = useState(true);
+  const [isAgentCharitySkillsEnabled, setIsAgentCharitySkillsEnabled] = useState(true);
+  const [isAgentVirtueSkillsEnabled, setIsAgentVirtueSkillsEnabled] = useState(true);
+  const [isAgentGoodnessSkillsEnabled, setIsAgentGoodnessSkillsEnabled] = useState(true);
+  const [isAgentTruthSkillsEnabled, setIsAgentTruthSkillsEnabled] = useState(true);
+  const [isAgentBeautySkillsEnabled, setIsAgentBeautySkillsEnabled] = useState(true);
+  const [isAgentWisdomSkillsEnabled, setIsAgentWisdomSkillsEnabled] = useState(true);
+  const [isAgentKnowledgeSkillsEnabled, setIsAgentKnowledgeSkillsEnabled] = useState(true);
+  const [isAgentUnderstandingSkillsEnabled, setIsAgentUnderstandingSkillsEnabled] = useState(true);
+  const [isAgentInsightSkillsEnabled, setIsAgentInsightSkillsEnabled] = useState(true);
+  const [isAgentIntuitionSkillsEnabled, setIsAgentIntuitionSkillsEnabled] = useState(true);
+  const [isAgentImaginationSkillsEnabled, setIsAgentImaginationSkillsEnabled] = useState(true);
+  const [isAgentCreativitySkillsEnabled, setIsAgentCreativitySkillsEnabled] = useState(true);
+  const [isAgentInnovationSkillsEnabled, setIsAgentInnovationSkillsEnabled] = useState(true);
+  const [isAgentOriginalitySkillsEnabled, setIsAgentOriginalitySkillsEnabled] = useState(true);
+  const [isAgentVisionSkillsEnabled, setIsAgentVisionSkillsEnabled] = useState(true);
+  const [isAgentStrategySkillsEnabled, setIsAgentStrategySkillsEnabled] = useState(true);
+  const [isAgentPlanningSkillsEnabled, setIsAgentPlanningSkillsEnabled] = useState(true);
+  const [isAgentOrganizationSkillsEnabled, setIsAgentOrganizationSkillsEnabled] = useState(true);
+  const [isAgentExecutionSkillsEnabled, setIsAgentExecutionSkillsEnabled] = useState(true);
+  const [isAgentMonitoringSkillsEnabled, setIsAgentMonitoringSkillsEnabled] = useState(true);
+  const [isAgentEvaluationSkillsEnabled, setIsAgentEvaluationSkillsEnabled] = useState(true);
+  const [isAgentAdaptationSkillsEnabled, setIsAgentAdaptationSkillsEnabled] = useState(true);
+  const [isAgentImprovementSkillsEnabled, setIsAgentImprovementSkillsEnabled] = useState(true);
+  const [isAgentLearningSkillsEnabled, setIsAgentLearningSkillsEnabled] = useState(true);
+  const [isAgentDevelopmentSkillsEnabled, setIsAgentDevelopmentSkillsEnabled] = useState(true);
+  const [isAgentGrowthSkillsEnabled, setIsAgentGrowthSkillsEnabled] = useState(true);
+  const [isAgentTransformationSkillsEnabled, setIsAgentTransformationSkillsEnabled] = useState(true);
+  const [isAgentImpactSkillsEnabled, setIsAgentImpactSkillsEnabled] = useState(true);
+  const [isAgentLegacySkillsEnabled, setIsAgentLegacySkillsEnabled] = useState(true);
+  const [isAgentPurposeSkillsEnabled, setIsAgentPurposeSkillsEnabled] = useState(true);
+  const [isAgentMeaningSkillsEnabled, setIsAgentMeaningSkillsEnabled] = useState(true);
+  const [isAgentFulfillmentSkillsEnabled, setIsAgentFulfillmentSkillsEnabled] = useState(true);
+  const [isAgentHappinessSkillsEnabled, setIsAgentHappinessSkillsEnabled] = useState(true);
+  const [isAgentWellbeingSkillsEnabled, setIsAgentWellbeingSkillsEnabled] = useState(true);
+  const [isAgentBelongingSkillsEnabled, setIsAgentBelongingSkillsEnabled] = useState(true);
+  const [isAgentEquitySkillsEnabled, setIsAgentEquitySkillsEnabled] = useState(true);
+  const [isAgentDiversitySkillsEnabled, setIsAgentDiversitySkillsEnabled] = useState(true);
+  const [isAgentInclusivitySkillsEnabled, setIsAgentInclusivitySkillsEnabled] = useState(true);
+  const [isAgentAcceptanceSkillsEnabled, setIsAgentAcceptanceSkillsEnabled] = useState(true);
+  const [isAgentToleranceSkillsEnabled, setIsAgentToleranceSkillsEnabled] = useState(true);
+  const [isAgentRespectSkillsEnabled, setIsAgentRespectSkillsEnabled] = useState(true);
+  const [isAgentLoyaltySkillsEnabled, setIsAgentLoyaltySkillsEnabled] = useState(true);
+  const [isAgentAccountabilitySkillsEnabled, setIsAgentAccountabilitySkillsEnabled] = useState(true);
+  const [isAgentResponsibilitySkillsEnabled, setIsAgentResponsibilitySkillsEnabled] = useState(true);
+  const [isAgentIntegritySkillsEnabled, setIsAgentIntegritySkillsEnabled] = useState(true);
+  const [isAgentHonestySkillsEnabled, setIsAgentHonestySkillsEnabled] = useState(true);
+  const [isAgentPatienceSkillsEnabled, setIsAgentPatienceSkillsEnabled] = useState(true);
+  const [isAgentPerseveranceSkillsEnabled, setIsAgentPerseveranceSkillsEnabled] = useState(true);
+  const [isAgentCourageSkillsEnabled, setIsAgentCourageSkillsEnabled] = useState(true);
+  const [isAgentJusticeSkillsEnabled, setIsAgentJusticeSkillsEnabled] = useState(true);
+  const [isAgentServiceSkillsEnabled, setIsAgentServiceSkillsEnabled] = useState(true);
+  const [isAgentGenerositySkillsEnabled, setIsAgentGenerositySkillsEnabled] = useState(true);
+  const [isAgentKindnessSkillsEnabled, setIsAgentKindnessSkillsEnabled] = useState(true);
+  const [isAgentCompassionSkillsEnabled, setIsAgentCompassionSkillsEnabled] = useState(true);
+  const [isAgentForgivenessSkillsEnabled, setIsAgentForgivenessSkillsEnabled] = useState(true);
+  const [isAgentGratitudeSkillsEnabled, setIsAgentGratitudeSkillsEnabled] = useState(true);
+  const [isAgentHumilitySkillsEnabled, setIsAgentHumilitySkillsEnabled] = useState(true);
+  const [isAgentOpenMindednessSkillsEnabled, setIsAgentOpenMindednessSkillsEnabled] = useState(true);
+  const [isAgentCuriositySkillsEnabled, setIsAgentCuriositySkillsEnabled] = useState(true);
+  const [isAgentOptimismSkillsEnabled, setIsAgentOptimismSkillsEnabled] = useState(true);
+  const [isAgentResilienceSkillsEnabled, setIsAgentResilienceSkillsEnabled] = useState(true);
+  const [isAgentMotivationSkillsEnabled, setIsAgentMotivationSkillsEnabled] = useState(true);
+  const [isAgentSelfRegulationSkillsEnabled, setIsAgentSelfRegulationSkillsEnabled] = useState(true);
+  const [isAgentSelfAwarenessSkillsEnabled, setIsAgentSelfAwarenessSkillsEnabled] = useState(true);
+  const [isAgentSocialAwarenessSkillsEnabled, setIsAgentSocialAwarenessSkillsEnabled] = useState(true);
+  const [isAgentEmpathySkillsEnabled, setIsAgentEmpathySkillsEnabled] = useState(true);
+  const [isAgentEmotionalRegulationSkillsEnabled, setIsAgentEmotionalRegulationSkillsEnabled] = useState(true);
+  const [isAgentCulturalSensitivitySkillsEnabled, setIsAgentCulturalSensitivitySkillsEnabled] = useState(true);
+  const [isAgentConflictResolutionSkillsEnabled, setIsAgentConflictResolutionSkillsEnabled] = useState(true);
+  const [isAgentStressManagementSkillsEnabled, setIsAgentStressManagementSkillsEnabled] = useState(true);
+  const [isAgentAdaptabilitySkillsEnabled, setIsAgentAdaptabilitySkillsEnabled] = useState(true);
+  const [isAgentTeamworkSkillsEnabled, setIsAgentTeamworkSkillsEnabled] = useState(true);
+  const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
+  const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
+  const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
+  const [isAgentTimeManagementSkillsEnabled, setIsAgentTimeManagementSkillsEnabled] = useState(true);
+  const [isAgentResourceManagementSkillsEnabled, setIsAgentResourceManagementSkillsEnabled] = useState(true);
+  const [isAgentRiskAssessmentSkillsEnabled, setIsAgentRiskAssessmentSkillsEnabled] = useState(true);
+  const [isAgentDecisionMakingSkillsEnabled, setIsAgentDecisionMakingSkillsEnabled] = useState(true);
+  const [isAgentComplexProblemSolvingSkillsEnabled, setIsAgentComplexProblemSolvingSkillsEnabled] = useState(true);
+  const [isAgentLearningFromFeedbackEnabled, setIsAgentLearningFromFeedbackEnabled] = useState(true);
+  const [isAgentCriticalThinkingEnhancementEnabled, setIsAgentCriticalThinkingEnhancementEnabled] = useState(true);
+  const [isAgentCreativityEnhancementEnabled, setIsAgentCreativityEnhancementEnabled] = useState(true);
+  const [isAgentEthicalFrameworkEnabled, setIsAgentEthicalFrameworkEnabled] = useState(true);
+  const [isAgentEmotionalIntelligenceEnabled, setIsAgentEmotionalIntelligenceEnabled] = useState(true);
+  const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
+  const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
+  const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
   const supabase = useSupabaseClient();
-  const [activeAgents, setActiveAgents] = useState<string[]>([]);
-  const [collaborationLevel, setCollaborationLevel] = useState<number>(50);
-  const [agentVisibility, setAgentVisibility] = useState<boolean>(true);
-  const [selectedMethodology, setSelectedMethodology] = useState<string>("");
-  const [selectedFramework, setSelectedFramework] = useState<string>("");
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [projectId, setProjectId] = useState<string>("demo-project");
-  
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    const checkAuth = async () => {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        navigate("/");
+    const fetchAgents = async () => {
+      try {
+        const fetchedAgents = await agentService.getAgents(supabase);
+        setAgents(fetchedAgents);
+      } catch (error) {
+        console.error("Error fetching agents:", error);
         toast({
-          title: "Authentication required",
-          description: "Please sign in to access the agent settings.",
+          title: "Error fetching agents",
+          description: "Failed to load the list of AI Agents.",
           variant: "destructive",
         });
       }
     };
-    
-    checkAuth();
-  }, [navigate, supabase.auth]);
-  
-  const handleAgentToggle = (agentId: string) => {
-    setActiveAgents((prev) => {
-      if (prev.includes(agentId)) {
-        return prev.filter((id) => id !== agentId);
-      } else {
-        return [...prev, agentId];
-      }
-    });
+
+    fetchAgents();
+  }, [supabase]);
+
+  const handleAgentSelect = (agent: any) => {
+    setSelectedAgent(agent);
+    setIsEditing(false);
+    setNewAgentName(agent.name);
+    setNewAgentDescription(agent.description);
+    setNewAgentModel(agent.model);
+    setNewAgentTemperature(agent.temperature);
+    setNewAgentMaxTokens(agent.max_tokens);
+    setNewAgentPrompt(agent.prompt);
+    setIsAgentActive(agent.is_active);
+    setIsAgentPublic(agent.is_public);
+    setIsAgentSafeMode(agent.is_safe_mode);
+    setIsAgentStreaming(agent.is_streaming);
+    setIsAgentContextAware(agent.is_context_aware);
+    setIsAgentKnowledgeEnabled(agent.is_knowledge_enabled);
+    setIsAgentToolsEnabled(agent.is_tools_enabled);
+    setIsAgentReasoningEnabled(agent.is_reasoning_enabled);
+    setIsAgentMemoryEnabled(agent.is_memory_enabled);
+    setIsAgentGoalsEnabled(agent.is_goals_enabled);
+    setIsAgentConstraintsEnabled(agent.is_constraints_enabled);
+    setIsAgentSelfImprovementEnabled(agent.is_self_improvement_enabled);
+    setIsAgentLongTermPlanningEnabled(agent.is_long_term_planning_enabled);
+    setIsAgentMultiAgentCollaborationEnabled(agent.is_multi_agent_collaboration_enabled);
+    setIsAgentEmotionalIntelligenceEnabled(agent.is_emotional_intelligence_enabled);
+    setIsAgentEthicalFrameworkEnabled(agent.is_ethical_framework_enabled);
+    setIsAgentCreativityEnhancementEnabled(agent.is_creativity_enhancement_enabled);
+    setIsAgentCriticalThinkingEnhancementEnabled(agent.is_critical_thinking_enhancement_enabled);
+    setIsAgentLearningFromFeedbackEnabled(agent.is_learning_from_feedback_enabled);
+    setIsAgentComplexProblemSolvingEnabled(agent.is_complex_problem_solving_enabled);
+    setIsAgentDecisionMakingEnabled(agent.is_decision_making_enabled);
+    setIsAgentRiskAssessmentEnabled(agent.is_risk_assessment_enabled);
+    setIsAgentResourceManagementEnabled(agent.is_resource_management_enabled);
+    setIsAgentTimeManagementEnabled(agent.is_time_management_enabled);
+    setIsAgentCommunicationSkillsEnabled(agent.is_communication_skills_enabled);
+    setIsAgentNegotiationSkillsEnabled(agent.is_negotiation_skills_enabled);
+    setIsAgentLeadershipSkillsEnabled(agent.is_leadership_skills_enabled);
+    setIsAgentTeamworkSkillsEnabled(agent.is_teamwork_skills_enabled);
+    setIsAgentAdaptabilitySkillsEnabled(agent.is_adaptability_skills_enabled);
+    setIsAgentStressManagementSkillsEnabled(agent.is_stress_management_skills_enabled);
+    setIsAgentConflictResolutionSkillsEnabled(agent.is_conflict_resolution_skills_enabled);
+    setIsAgentCulturalSensitivitySkillsEnabled(agent.is_cultural_sensitivity_skills_enabled);
+    setIsAgentEmotionalRegulationSkillsEnabled(agent.is_emotional_regulation_skills_enabled);
+    setIsAgentEmpathySkillsEnabled(agent.is_empathy_skills_enabled);
+    setIsAgentSocialAwarenessSkillsEnabled(agent.is_social_awareness_skills_enabled);
+    setIsAgentSelfAwarenessSkillsEnabled(agent.is_self_awareness_skills_enabled);
+    setIsAgentSelfRegulationSkillsEnabled(agent.is_self_regulation_skills_enabled);
+    setIsAgentMotivationSkillsEnabled(agent.is_motivation_skills_enabled);
+    setIsAgentResilienceSkillsEnabled(agent.is_resilience_skills_enabled);
+    setIsAgentOptimismSkillsEnabled(agent.is_optimism_skills_enabled);
+    setIsAgentCuriositySkillsEnabled(agent.is_curiosity_skills_enabled);
+    setIsAgentOpenMindednessSkillsEnabled(agent.is_open_mindedness_skills_enabled);
+    setIsAgentHumilitySkillsEnabled(agent.is_humility_skills_enabled);
+    setIsAgentGratitudeSkillsEnabled(agent.is_gratitude_skills_enabled);
+    setIsAgentForgivenessSkillsEnabled(agent.is_forgiveness_skills_enabled);
+    setIsAgentCompassionSkillsEnabled(agent.is_compassion_skills_enabled);
+    setIsAgentKindnessSkillsEnabled(agent.is_kindness_skills_enabled);
+    setIsAgentGenerositySkillsEnabled(agent.is_generosity_skills_enabled);
+    setIsAgentServiceSkillsEnabled(agent.is_service_skills_enabled);
+    setIsAgentJusticeSkillsEnabled(agent.is_justice_skills_enabled);
+    setIsAgentCourageSkillsEnabled(agent.is_courage_skills_enabled);
+    setIsAgentPerseveranceSkillsEnabled(agent.is_perseverance_skills_enabled);
+    setIsAgentPatienceSkillsEnabled(agent.is_patience_skills_enabled);
+    setIsAgentHonestySkillsEnabled(agent.is_honesty_skills_enabled);
+    setIsAgentIntegritySkillsEnabled(agent.is_integrity_skills_enabled);
+    setIsAgentResponsibilitySkillsEnabled(agent.is_responsibility_skills_enabled);
+    setIsAgentAccountabilitySkillsEnabled(agent.is_accountability_skills_enabled);
+    setIsAgentLoyaltySkillsEnabled(agent.is_loyalty_skills_enabled);
+    setIsAgentRespectSkillsEnabled(agent.is_respect_skills_enabled);
+    setIsAgentToleranceSkillsEnabled(agent.is_tolerance_skills_enabled);
+    setIsAgentAcceptanceSkillsEnabled(agent.is_acceptance_skills_enabled);
+    setIsAgentInclusivitySkillsEnabled(agent.is_inclusivity_skills_enabled);
+    setIsAgentDiversitySkillsEnabled(agent.is_diversity_skills_enabled);
+    setIsAgentEquitySkillsEnabled(agent.is_equity_skills_enabled);
+    setIsAgentBelongingSkillsEnabled(agent.is_belonging_skills_enabled);
+    setIsAgentWellbeingSkillsEnabled(agent.is_wellbeing_skills_enabled);
+    setIsAgentHappinessSkillsEnabled(agent.is_happiness_skills_enabled);
+    setIsAgentFulfillmentSkillsEnabled(agent.is_fulfillment_skills_enabled);
+    setIsAgentMeaningSkillsEnabled(agent.is_meaning_skills_enabled);
+    setIsAgentPurposeSkillsEnabled(agent.is_purpose_skills_enabled);
+    setIsAgentLegacySkillsEnabled(agent.is_legacy_skills_enabled);
+    setIsAgentImpactSkillsEnabled(agent.is_impact_skills_enabled);
+    setIsAgentTransformationSkillsEnabled(agent.is_transformation_skills_enabled);
+    setIsAgentGrowthSkillsEnabled(agent.is_growth_skills_enabled);
+    setIsAgentLearningSkillsEnabled(agent.is_learning_skills_enabled);
+    setIsAgentDevelopmentSkillsEnabled(agent.is_development_skills_enabled);
+    setIsAgentImprovementSkillsEnabled(agent.is_improvement_skills_enabled);
+    setIsAgentProgressSkillsEnabled(agent.is_progress_skills_enabled);
+    setIsAgentSuccessSkillsEnabled(agent.is_success_skills_enabled);
+    setIsAgentAchievementSkillsEnabled(agent.is_achievement_skills_enabled);
+    setIsAgentRecognitionSkillsEnabled(agent.is_recognition_skills_enabled);
+    setIsAgentAppreciationSkillsEnabled(agent.is_appreciation_skills_enabled);
+    setIsAgentCelebrationSkillsEnabled(agent.is_celebration_skills_enabled);
+    setIsAgentJoySkillsEnabled(agent.is_joy_skills_enabled);
+    setIsAgentPeaceSkillsEnabled(agent.is_peace_skills_enabled);
+    setIsAgentLoveSkillsEnabled(agent.is_love_skills_enabled);
+    setIsAgentHopeSkillsEnabled(agent.is_hope_skills_enabled);
+    setIsAgentFaithSkillsEnabled(agent.is_faith_skills_enabled);
+    setIsAgentCharitySkillsEnabled(agent.is_charity_skills_enabled);
+    setIsAgentVirtueSkillsEnabled(agent.is_virtue_skills_enabled);
+    setIsAgentGoodnessSkillsEnabled(agent.is_goodness_skills_enabled);
+    setIsAgentTruthSkillsEnabled(agent.is_truth_skills_enabled);
+    setIsAgentBeautySkillsEnabled(agent.is_beauty_skills_enabled);
+    setIsAgentWisdomSkillsEnabled(agent.is_wisdom_skills_enabled);
+    setIsAgentKnowledgeSkillsEnabled(agent.is_knowledge_skills_enabled);
+    setIsAgentUnderstandingSkillsEnabled(agent.is_understanding_skills_enabled);
+    setIsAgentInsightSkillsEnabled(agent.is_insight_skills_enabled);
+    setIsAgentIntuitionSkillsEnabled(agent.is_intuition_skills_enabled);
+    setIsAgentImaginationSkillsEnabled(agent.is_imagination_skills_enabled);
+    setIsAgentCreativitySkillsEnabled(agent.is_creativity_skills_enabled);
+    setIsAgentInnovationSkillsEnabled(agent.is_innovation_skills_enabled);
+    setIsAgentOriginalitySkillsEnabled(agent.is_originality_skills_enabled);
+    setIsAgentVisionSkillsEnabled(agent.is_vision_skills_enabled);
+    setIsAgentStrategySkillsEnabled(agent.is_strategy_skills_enabled);
+    setIsAgentPlanningSkillsEnabled(agent.is_planning_skills_enabled);
+    setIsAgentOrganizationSkillsEnabled(agent.is_organization_skills_enabled);
+    setIsAgentExecutionSkillsEnabled(agent.is_execution_skills_enabled);
+    setIsAgentMonitoringSkillsEnabled(agent.is_monitoring_skills_enabled);
+    setIsAgentEvaluationSkillsEnabled(agent.is_evaluation_skills_enabled);
   };
-  
-  const handleSaveSettings = async () => {
-    setIsProcessing(true);
-    
-    try {
-      const { error } = await supabase
-        .from('agent_settings')
-        .upsert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          active_agents: activeAgents,
-          collaboration_level: collaborationLevel,
-          agent_visibility: agentVisibility,
-          methodology: selectedMethodology,
-          framework: selectedFramework,
-          updated_at: new Date().toISOString(),
-        });
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Settings saved",
-        description: "Your agent configuration has been updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      toast({
-        title: "Error saving settings",
-        description: "There was a problem updating your agent configuration.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  
-  const handleRunSimulation = async () => {
-    if (activeAgents.length === 0) {
-      toast({
-        title: "No agents selected",
-        description: "Please select at least one agent to run the simulation.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsProcessing(true);
-    
-    try {
-      await agentService.startCollaboration(
-        projectId,
-        activeAgents,
-        collaborationLevel / 100
-      );
-      
-      navigate("/dashboard");
-      toast({
-        title: "Simulation started",
-        description: "Your agent simulation has been initiated. View results in the dashboard.",
-      });
-    } catch (error) {
-      console.error("Error starting simulation:", error);
-      toast({
-        title: "Error starting simulation",
-        description: "There was a problem starting the agent simulation.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+
+  const handleEditClick = () => {
+    setIsEditing(true);
   };
 
-  return (
-    <PageTransition>
-      <Navbar />
-      
-      <main className="pt-24 min-h-screen">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-semibold">AI Agent Configuration</h1>
-                <p className="text-muted-foreground mt-1">
-                  Customize and manage your qualitative research AI agents
-                </p>
-              </div>
-              <Button
-                onClick={() => navigate("/agent-customization")}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-              >
-                <PenTool className="mr-2 h-4 w-4" />
-                Design Custom Agent
-              </Button>
-            </div>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <Tabs defaultValue="methodology" className="w-full">
-                <TabsList className="w-full grid grid-cols-3">
-                  <TabsTrigger value="methodology">Methodology Agents</TabsTrigger>
-                  <TabsTrigger value="theoretical">Theoretical Framework</TabsTrigger>
-                  <TabsTrigger value="validation">Cross-Checking Agents</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="methodology" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {methodologies.map((method) => (
-                      <AgentCard
-                        key={method.value}
-                        id={method.value}
-                        title={method.label}
-                        description={`Specializes in ${method.label} approach to qualitative data analysis.`}
-                        isActive={activeAgents.includes(method.value)}
-                        onToggle={() => handleAgentToggle(method.value)}
-                      />
-                    ))}
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-2">Primary Methodology</h3>
-                    <Select
-                      value={selectedMethodology}
-                      onValueChange={setSelectedMethodology}
-                    >
-                      <SelectTrigger className="w-full md:w-72">
-                        <SelectValue placeholder="Select primary research methodology" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {methodologies.map((method) => (
-                          <SelectItem key={method.value} value={method.value}>
-                            {method.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      This methodology will guide the primary analysis approach.
-                    </p>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="theoretical" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {theoreticalFrameworks.map((framework) => (
-                      <AgentCard
-                        key={framework.value}
-                        id={framework.value}
-                        title={framework.label}
-                        description={`Analyzes data through the lens of ${framework.label}.`}
-                        isActive={activeAgents.includes(framework.value)}
-                        onToggle={() => handleAgentToggle(framework.value)}
-                      />
-                    ))}
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-2">Primary Theoretical Framework</h3>
-                    <Select
-                      value={selectedFramework}
-                      onValueChange={setSelectedFramework}
-                    >
-                      <SelectTrigger className="w-full md:w-72">
-                        <SelectValue placeholder="Select primary theoretical framework" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {theoreticalFrameworks.map((framework) => (
-                          <SelectItem key={framework.value} value={framework.value}>
-                            {framework.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      This framework will provide the theoretical lens for interpretation.
-                    </p>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="validation" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {crossCheckingMethods.map((method) => (
-                      <AgentCard
-                        key={method.value}
-                        id={method.value}
-                        title={method.label}
-                        description={`Ensures research quality through ${method.label}.`}
-                        isActive={activeAgents.includes(method.value)}
-                        onToggle={() => handleAgentToggle(method.value)}
-                      />
-                    ))}
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-2">Collaboration Settings</h3>
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <Label htmlFor="collaboration">Agent Collaboration Level</Label>
-                          <span className="text-sm text-muted-foreground">{collaborationLevel}%</span>
-                        </div>
-                        <Slider
-                          id="collaboration"
-                          min={0}
-                          max={100}
-                          step={10}
-                          value={[collaborationLevel]}
-                          onValueChange={(value) => setCollaborationLevel(value[0])}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Higher values encourage more debate between agents with different perspectives.
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label htmlFor="visibility" className="mb-1 block">Agent Visibility</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Show agent decision process in real-time
-                          </p>
-                        </div>
-                        <Switch
-                          id="visibility"
-                          checked={agentVisibility}
-                          onCheckedChange={setAgentVisibility}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="mt-8 flex justify-end space-x-4">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveSettings}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? "Saving..." : "Save Settings"}
-                </Button>
-                <Button
-                  variant="default"
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                  onClick={handleRunSimulation}
-                  disabled={isProcessing || activeAgents.length === 0}
-                >
-                  Run Agent Simulation
-                </Button>
-              </div>
-            </div>
-            
-            <div className="lg:col-span-1">
-              <Card className="bg-secondary/30 border-border/50 h-full">
-                <CardHeader>
-                  <CardTitle>Agent Visualization</CardTitle>
-                  <CardDescription>
-                    See how your selected agents will collaborate
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-96 flex items-center justify-center">
-                    <AgentVisualizer 
-                      projectId={projectId}
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col items-start space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Selected Agents</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {activeAgents.length > 0 ? (
-                        activeAgents.map((agentId) => {
-                          const allAgents = [...methodologies, ...theoreticalFrameworks, ...crossCheckingMethods];
-                          const agent = allAgents.find(a => a.value === agentId);
-                          return (
-                            <Badge key={agentId} variant="secondary">
-                              {agent?.label || agentId}
-                            </Badge>
-                          );
-                        })
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No agents selected</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Agent Status</h4>
-                    <div className="text-sm">
-                      {activeAgents.length > 0 ? (
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                          <span>Ready to collaborate</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center">
-                          <div className="h-2 w-2 rounded-full bg-amber-500 mr-2"></div>
-                          <span>Awaiting configuration</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </main>
-      
-      <Footer />
-    </PageTransition>
-  );
-};
-
-interface AgentCardProps {
-  id: string;
-  title: string;
-  description: string;
-  isActive: boolean;
-  onToggle: () => void;
-}
-
-const AgentCard = ({ id, title, description, isActive, onToggle }: AgentCardProps) => {
-  return (
-    <Card className={`border transition-all duration-300 ${
-      isActive ? 'border-primary/50 bg-primary/5' : 'border-border/50'
-    }`}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg">{title}</CardTitle>
-          <Switch checked={isActive} onCheckedChange={onToggle} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </CardContent>
-      <CardFooter className="pt-0">
-        <div className="flex items-center text-xs text-muted-foreground">
-          <div className={`h-2 w-2 rounded-full mr-2 ${isActive ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-          {isActive ? 'Active' : 'Inactive'}
-        </div>
-      </CardFooter>
-    </Card>
-  );
-};
-
-export default AgentSettings;
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    if (selectedAgent) {
+      setNewAgentName(selectedAgent.name);
+      setNewAgentDescription(selectedAgent.description);
+      setNewAgentModel(selectedAgent.model);
+      setNewAgentTemperature(selectedAgent.temperature);
+      setNewAgentMaxTokens(selectedAgent.max_tokens);
+      setNewAgentPrompt(selectedAgent.prompt);
+      setIsAgentActive(selectedAgent.is_active);
+      setIsAgentPublic(selectedAgent.is_public);
+      setIsAgentSafeMode(selectedAgent.is_safe_mode);
+      setIsAgentStreaming(selectedAgent.is_streaming);
+      setIsAgentContextAware(selectedAgent.is_context_aware);
+      setIsAgentKnowledgeEnabled(selectedAgent.is_knowledge_enabled);
+      setIsAgentToolsEnabled(selectedAgent.is_tools_enabled);
+      setIsAgentReasoningEnabled(selectedAgent.is_reasoning_enabled);
+      setIsAgentMemoryEnabled(selectedAgent.is_memory_enabled);
+      setIsAgentGoalsEnabled(selectedAgent.is_goals_enabled);
+      setIsAgentConstraintsEnabled(selectedAgent.is_constraints_enabled);
+      setIsAgentSelfImprovementEnabled(selectedAgent.is_self_improvement_enabled);
+      setIsAgentLongTermPlanningEnabled(selectedAgent.is_long_term_planning_enabled);
+      setIsAgentMultiAgentCollaborationEnabled(selectedAgent.is_multi_agent_collaboration_enabled);
+      setIsAgentEmotionalIntelligenceEnabled(selectedAgent.is_emotional_intelligence_enabled);
+      setIsAgentEthicalFrameworkEnabled(selectedAgent.is_ethical_framework_enabled);
+      setIsAgentCreativityEnhancementEnabled(selectedAgent.is_creativity_enhancement_enabled);
+      setIsAgentCriticalThinkingEnhancementEnabled(selectedAgent.is_critical_thinking_enhancement_enabled);
+      setIsAgentLearningFromFeedbackEnabled(selectedAgent.is_learning_from_feedback_enabled);
+      setIsAgentComplexProblemSolvingEnabled(selectedAgent.is_complex_problem_solving_enabled);
+      setIsAgentDecisionMakingEnabled(selectedAgent.is_decision_making_enabled);
+      setIsAgentRiskAssessmentEnabled(selectedAgent.is_risk_assessment_enabled);
+      setIsAgentResourceManagementEnabled(selectedAgent.is_resource_management_enabled);
+      setIsAgentTimeManagementEnabled(selectedAgent.is_time_management_enabled);
+      setIsAgentCommunicationSkillsEnabled(selectedAgent.is_communication_skills_enabled);
+      setIsAgentNegotiationSkillsEnabled(selectedAgent.is_negotiation_skills_enabled);
+      setIsAgentLeadershipSkillsEnabled(selectedAgent.is_leadership_skills_enabled);
+      setIsAgentTeamworkSkillsEnabled(selectedAgent.is_teamwork_skills_enabled);
+      setIsAgentAdaptabilitySkillsEnabled(selectedAgent.is_adaptability_skills_enabled);
+      setIsAgentStressManagementSkillsEnabled(selectedAgent.is_stress_management_skills_enabled);
+      setIsAgentConflictResolutionSkillsEnabled(selectedAgent.is_conflict_resolution_skills_enabled);
+      setIsAgentCulturalSensitivitySkillsEnabled(selectedAgent.is_cultural_sensitivity_skills_enabled);
+      setIsAgentEmotionalRegulationSkillsEnabled(selectedAgent.is_emotional_regulation_skills_enabled);
+      setIsAgentEmpathySkillsEnabled(selectedAgent.is_empathy_skills_enabled);
+      setIsAgentSocialAwarenessSkillsEnabled(selectedAgent.is_social_awareness_skills_enabled);
+      setIsAgentSelfAwarenessSkillsEnabled(selectedAgent.is_self_awareness_skills_enabled);
+      setIsAgentSelfRegulationSkillsEnabled(selectedAgent.is_self_regulation_skills_enabled);
+      setIsAgentMotivationSkillsEnabled(selectedAgent.is_motivation_skills_enabled);
+      setIsAgentResilienceSkillsEnabled(selectedAgent.is_resilience_skills_enabled);
+      setIsAgentOptimismSkillsEnabled(selectedAgent.is_optimism_skills_enabled);
+      setIsAgentCuriositySkillsEnabled(selectedAgent.is_curiosity_skills_enabled);
+      setIsAgentOpenMindednessSkillsEnabled(selectedAgent.is_open_mindedness_skills_enabled);
+      setIsAgentHumilitySkillsEnabled(selectedAgent.is_humility_skills_enabled);
+      setIsAgentGratitudeSkillsEnabled(selectedAgent.is_gratitude_skills_enabled);
+      setIsAgentForgivenessSkillsEnabled(selectedAgent.is_forgiveness_skills_enabled);
+      setIsAgentCompassionSkillsEnabled(selectedAgent.is_compassion_skills_enabled);
+      setIsAgentKindnessSkillsEnabled(selectedAgent.is_kindness_skills_enabled);
+      setIsAgentGenerositySkillsEnabled(selectedAgent.is_generosity_skills_enabled);
+      setIsAgentServiceSkillsEnabled(selectedAgent.is_service_skills_enabled);
+      setIsAgentJusticeSkillsEnabled(selectedAgent.is_justice_skills_enabled);
+      setIsAgentCourageSkillsEnabled(selectedAgent.is_courage_skills_enabled);
+      setIsAgentPerseveranceSkillsEnabled(selectedAgent.is_perseverance_skills_enabled);
+      setIsAgentPatienceSkillsEnabled(selectedAgent.is_patience_skills_enabled);
+      setIsAgentHonestySkillsEnabled(selectedAgent.is_honesty_skills_enabled);
+      setIsAgentIntegritySkillsEnabled(selectedAgent.is_integrity_skills_enabled);
+      setIsAgentResponsibilitySkillsEnabled(selectedAgent.is_responsibility_skills_enabled);
+      setIsAgentAccountabilitySkillsEnabled(selectedAgent.is_accountability_skills_enabled);
+      setIsAgentLoyaltySkillsEnabled(selectedAgent.is_loyalty_skills_enabled);
+      setIsAgentRespectSkillsEnabled(selectedAgent.is_respect_skills_enabled);
+      setIsAgentToleranceSkillsEnabled(selectedAgent.is_tolerance_skills_enabled);
+      setIsAgentAcceptanceSkillsEnabled(selectedAgent.is_acceptance_skills_enabled);
+      setIsAgentInclusivitySkillsEnabled(selectedAgent.is_inclusivity_skills_enabled);
+      setIsAgentDiversitySkills

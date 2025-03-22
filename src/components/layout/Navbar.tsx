@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Database, Settings, LucideBot, User } from "lucide-react";
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,

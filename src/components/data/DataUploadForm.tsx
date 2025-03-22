@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FileUploadSection from "./FileUploadSection";
@@ -74,7 +73,6 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
     }
   });
   
-  // Restore processed files from localStorage if any
   useEffect(() => {
     const savedFiles = localStorage.getItem(`project_${projectId}_processed_files`);
     if (savedFiles) {
@@ -100,20 +98,15 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
     setIsProcessing(true);
     
     try {
-      // In a real implementation, this would send the files to the server for processing
-      // For now, we'll just simulate a delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Extract file names for processed files list
       const fileNames = uploadedFiles.map(file => file.file.name);
       
-      // Save to localStorage for demo persistence
       const existingFiles = [...processedFiles];
       const newFiles = [...new Set([...existingFiles, ...fileNames])];
       setProcessedFiles(newFiles);
       localStorage.setItem(`project_${projectId}_processed_files`, JSON.stringify(newFiles));
       
-      // Also store a count in a project document count key
       localStorage.setItem(`project_${projectId}_document_count`, newFiles.length.toString());
       
       toast({
@@ -122,7 +115,6 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
         variant: "success"
       });
       
-      // Move to the preprocessing tab
       setActiveTab("preprocess");
     } catch (error) {
       console.error("Error processing files:", error);
@@ -143,10 +135,8 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
       console.log("Preprocessing with settings:", data);
       console.log("Files:", processedFiles);
       
-      // In a real implementation, this would send the preprocessing settings and files to the server
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Store preprocessing settings in localStorage
       localStorage.setItem(`project_${projectId}_preprocessing`, JSON.stringify(data));
       
       toast({
@@ -155,7 +145,6 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
         variant: "success"
       });
       
-      // Navigate back to the project page
       navigate(`/project/${projectId}`);
       
     } catch (error) {
