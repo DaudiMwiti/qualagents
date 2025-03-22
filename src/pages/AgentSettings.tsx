@@ -142,21 +142,17 @@ const AgentSettings = () => {
     setIsProcessing(true);
     
     try {
-      const collaboration = await agentService.startCollaboration(
+      await agentService.startCollaboration(
         projectId,
         activeAgents,
         collaborationLevel / 100
       );
       
-      if (collaboration) {
-        navigate("/dashboard");
-        toast({
-          title: "Simulation started",
-          description: "Your agent simulation has been initiated. View results in the dashboard.",
-        });
-      } else {
-        throw new Error("Failed to start collaboration");
-      }
+      navigate("/dashboard");
+      toast({
+        title: "Simulation started",
+        description: "Your agent simulation has been initiated. View results in the dashboard.",
+      });
     } catch (error) {
       console.error("Error starting simulation:", error);
       toast({
