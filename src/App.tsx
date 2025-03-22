@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import ProjectView from "./pages/ProjectView";
 import Settings from "./pages/Settings";
 import AgentSettings from "./pages/AgentSettings";
 import NotFound from "./pages/NotFound";
+import DataUpload from "./pages/DataUpload";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +60,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/project/:id" element={<ProjectView />} />
+            <Route path="/data-upload/:projectId?" element={<DataUpload />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/agent-settings" element={<AgentSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

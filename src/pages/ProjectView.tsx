@@ -116,14 +116,19 @@ const ProjectView = () => {
                 </div>
               </div>
               
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <Button variant="outline" className="h-9">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Button>
-                <Button className="h-9">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Data
+                <Button 
+                  asChild
+                  className="h-9"
+                >
+                  <Link to={`/data-upload/${id}`}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Data
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -246,9 +251,11 @@ const ProjectView = () => {
                       <p className="text-sm text-muted-foreground mt-2 mb-6">
                         Upload documents to begin analysis
                       </p>
-                      <Button>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Documents
+                      <Button asChild>
+                        <Link to={`/data-upload/${id}`}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Documents
+                        </Link>
                       </Button>
                     </div>
                   </div>
