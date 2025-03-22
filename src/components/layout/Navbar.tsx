@@ -14,6 +14,7 @@ const Navbar = () => {
   const user = useUser();
   
   const isHome = location.pathname === "/";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
   
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +48,9 @@ const Navbar = () => {
       });
     }
   };
+
+  // Don't show navbar on auth pages
+  if (isAuthPage) return null;
 
   return (
     <motion.header
@@ -84,7 +88,7 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center space-x-3">
-          {!isHome && (
+          {!isHome && user && (
             <>
               <Button asChild variant="ghost" size="icon" className="h-9 w-9">
                 <Link to="/agent-settings">
@@ -108,11 +112,16 @@ const Navbar = () => {
               Sign Out
             </Button>
           ) : (
-            <Button asChild className="rounded-full transition-all duration-300">
-              <Link to="/dashboard">
-                {isHome ? "Get Started" : "Dashboard"}
-              </Link>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button asChild variant="outline" className="rounded-full transition-all duration-300">
+                <Link to="/login">Sign In</Link>
+              </Button>
+              <Button asChild className="rounded-full transition-all duration-300">
+                <Link to="/signup">
+                  {isHome ? "Get Started" : "Sign Up"}
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>
