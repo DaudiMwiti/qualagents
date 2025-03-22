@@ -7,8 +7,8 @@ This is a FastAPI backend service that uses LangGraph and LangChain with Hugging
 
 ### Prerequisites
 - Python 3.9+
-- At least 8GB RAM (for running Mistral 7B model)
-- GPU recommended but not required
+- 2-4GB RAM (for running flan-t5-large model)
+- CPU-only deployment is sufficient
 
 ### Local Development
 
@@ -29,7 +29,7 @@ This is a FastAPI backend service that uses LangGraph and LangChain with Hugging
    ```
 6. Optionally, change the model in the `.env` file:
    ```
-   LOCAL_LLM_MODEL=mistralai/Mistral-7B-Instruct-v0.1
+   LOCAL_LLM_MODEL=google/flan-t5-large
    ```
 7. Run the server:
    ```
@@ -48,6 +48,30 @@ The API will be available at `http://localhost:8000`
    ```
    docker run -p 8000:8000 langgraph-service
    ```
+
+## Deployment Options
+
+### Render.com
+1. Create a new Web Service
+2. Connect your repository
+3. Set the build command: `pip install -r backend/langgraph_service/requirements.txt`
+4. Set the start command: `cd backend/langgraph_service && uvicorn app:app --host 0.0.0.0 --port $PORT`
+5. Set environment variables:
+   - `LOCAL_LLM_MODEL=google/flan-t5-large`
+   - `CORS_ORIGINS=https://your-frontend-url.com`
+
+### Fly.io
+1. Install the Fly CLI
+2. Navigate to the `backend/langgraph_service` directory
+3. Run `fly launch`
+4. Set secrets: `fly secrets set LOCAL_LLM_MODEL=google/flan-t5-large CORS_ORIGINS=https://your-frontend-url.com`
+5. Deploy: `fly deploy`
+
+### Hugging Face Spaces
+1. Create a new Space with the Gradio SDK
+2. Upload your code
+3. Add a `requirements.txt` file and a `app.py` file
+4. Set the environment variables in the Space settings
 
 ## API Endpoints
 
@@ -87,7 +111,13 @@ To use this service with the React frontend:
 
 1. Ensure the service is running (either locally or deployed)
 2. Set the `USE_LANGGRAPH_BACKEND` environment variable to `true` in your frontend environment
-3. The frontend will automatically connect to this service instead of using the simulated responses
+3. Make sure your frontend's `vite.config.ts` file includes:
+   ```typescript
+   define: {
+     'process.env.USE_LANGGRAPH_BACKEND': JSON.stringify(process.env.USE_LANGGRAPH_BACKEND)
+   }
+   ```
+4. The frontend will automatically connect to this service instead of using the simulated responses
 
 ## Available Agent Types
 
@@ -99,9 +129,21 @@ To use this service with the React frontend:
 
 ## Model Configuration
 
-By default, this service uses the Mistral-7B-Instruct-v0.1 model from Hugging Face. You can change the model by setting the `LOCAL_LLM_MODEL` environment variable.
+By default, this service uses the google/flan-t5-large model from Hugging Face, which requires less resources than larger models.
 
 Some recommended models:
-- `mistralai/Mistral-7B-Instruct-v0.1`
+- `google/flan-t5-large` (default, good balance of performance and resource usage)
+- `google/flan-t5-base` (smaller, faster, less resource intensive)
+- `facebook/bart-large-cnn` (good for summarization tasks)
+- `distilgpt2` (very small model for simple text generation)
+
+For more powerful models (requires more resources):
+- `mistralai/Mistral-7B-Instruct-v0.1` (requires 8GB+ RAM)
 - `TheBloke/Llama-2-7B-Chat-GGUF` (requires GGUF support)
-- `google/flan-t5-large` (smaller, faster)
+
+## Troubleshooting
+
+If you encounter Out of Memory (OOM) errors:
+1. Try a smaller model like `google/flan-t5-base` or `distilgpt2`
+2. Reduce batch size and max_new_tokens in the pipeline configuration
+3. Consider deploying on a machine with more RAM

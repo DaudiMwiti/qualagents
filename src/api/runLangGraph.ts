@@ -1,7 +1,8 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000'; // FastAPI server URL
+// Get the backend URL from environment (default to localhost for development)
+const API_BASE_URL = process.env.LANGGRAPH_API_URL || 'http://localhost:8000';
 
 interface RunAnalysisRequest {
   projectId: string;
@@ -55,6 +56,8 @@ export const runLangGraphAnalysis = async (
         summary: 'Analysis reveals significant usability challenges with the navigation interface, particularly on mobile devices. Gender disparities exist in how technical issues are reported, with women providing more specific details about interface problems. The documentation uses technical jargon that creates barriers for non-expert users.'
       };
     }
+
+    console.log(`Connecting to LangGraph backend at: ${API_BASE_URL}`);
 
     // Make the actual API call to the FastAPI backend
     const response = await axios.post<RunAnalysisResponse>(

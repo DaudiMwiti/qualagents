@@ -10,18 +10,25 @@ from langchain.memory import ConversationBufferMemory
 from langchain.tools import tool
 from langgraph.graph import StateGraph
 from langchain.schema import HumanMessage, AIMessage
-from transformers import pipeline
+from transformers import pipeline, AutoConfig
 from langchain.llms import HuggingFacePipeline
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables for model configuration
-MODEL_NAME = os.getenv("LOCAL_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.1")
+DEFAULT_MODEL = "google/flan-t5-large"
+MODEL_NAME = os.getenv("LOCAL_LLM_MODEL", DEFAULT_MODEL)
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8080").split(",")
 
 app = FastAPI(title="LangGraph Analysis Service")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,19 +55,55 @@ AGENT_METHODS = {
     "phenomenological": "Phenomenological Agent"
 }
 
+def create_llm():
+    """Create LLM with fallback logic if primary model is too large"""
+    try:
+        # Check if model exists and get its config
+        logger.info(f"Attempting to load model: {MODEL_NAME}")
+        config = AutoConfig.from_pretrained(MODEL_NAME)
+        
+        # Check model size (rough estimate based on parameters)
+        if hasattr(config, 'num_parameters') and config.num_parameters > 1_500_000_000:  # 1.5B parameters
+            logger.warning(f"Model {MODEL_NAME} is large ({config.num_parameters/1_000_000_000:.1f}B parameters). Consider a smaller model for deployment.")
+        
+        # Create the pipeline
+        hf_pipeline = pipeline(
+            "text-generation",
+            model=MODEL_NAME,
+            max_new_tokens=256,
+            do_sample=True,
+            temperature=0.7
+        )
+        
+        return HuggingFacePipeline(pipeline=hf_pipeline)
+        
+    except Exception as e:
+        logger.error(f"Error loading model {MODEL_NAME}: {str(e)}")
+        
+        # Try fallback models
+        fallback_models = ["google/flan-t5-base", "facebook/bart-large-cnn", "distilgpt2"]
+        
+        for fallback_model in fallback_models:
+            try:
+                logger.warning(f"Attempting to load fallback model: {fallback_model}")
+                hf_pipeline = pipeline(
+                    "text-generation",
+                    model=fallback_model,
+                    max_new_tokens=128,  # Smaller models, smaller outputs
+                    do_sample=True,
+                    temperature=0.7
+                )
+                return HuggingFacePipeline(pipeline=hf_pipeline)
+            except Exception as fallback_error:
+                logger.error(f"Error loading fallback model {fallback_model}: {str(fallback_error)}")
+        
+        # If all fallbacks fail, raise exception
+        raise RuntimeError("Failed to load any language model. Check model compatibility and system resources.")
+
 def create_agent_for_method(agent_id: str):
     """Create a specific agent based on methodology"""
-    # Create Hugging Face pipeline
-    hf_pipeline = pipeline(
-        "text-generation",
-        model=MODEL_NAME,
-        max_new_tokens=256,
-        do_sample=True,
-        temperature=0.7
-    )
-    
-    # Create LangChain wrapper
-    llm = HuggingFacePipeline(pipeline=hf_pipeline)
+    # Get LLM with fallback logic
+    llm = create_llm()
     
     @tool
     def analyze_data(query: str) -> str:
@@ -100,7 +143,7 @@ def create_agent_for_method(agent_id: str):
 
 @app.get("/")
 async def root():
-    return {"message": "LangGraph Analysis Service is running"}
+    return {"message": "LangGraph Analysis Service is running", "model": MODEL_NAME}
 
 @app.post("/run-analysis", response_model=AnalysisResponse)
 async def run_analysis(request: AnalysisRequest):
@@ -186,6 +229,7 @@ async def run_analysis(request: AnalysisRequest):
         )
         
     except Exception as e:
+        logger.error(f"Error in run_analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
