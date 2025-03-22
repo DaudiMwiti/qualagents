@@ -21,6 +21,14 @@ export interface InsightFeedback {
   comment: string;
 }
 
+// Create a proper subscription object that matches the zen-observable-ts interface
+const createSubscription = (cleanup: () => void): Subscription => {
+  return {
+    closed: false,
+    unsubscribe: cleanup
+  };
+};
+
 // Mock agent service implementation
 class AgentService {
   async getUserAgents(userId: string): Promise<Agent[]> {
@@ -32,11 +40,9 @@ class AgentService {
   subscribeToAgentUpdates(agentId: string, callback: (agent: Agent) => void): Subscription {
     console.log(`Subscribing to updates for agent ${agentId}`);
     // In a real implementation, this would set up a WebSocket or similar
-    return {
-      unsubscribe: () => {
-        console.log(`Unsubscribed from agent ${agentId}`);
-      }
-    };
+    return createSubscription(() => {
+      console.log(`Unsubscribed from agent ${agentId}`);
+    });
   }
   
   subscribeToAgentInteractions(
@@ -45,11 +51,9 @@ class AgentService {
   ): Subscription {
     console.log(`Subscribing to interactions for agent ${agentId}`);
     // In a real implementation, this would set up a WebSocket or similar
-    return {
-      unsubscribe: () => {
-        console.log(`Unsubscribed from agent interactions ${agentId}`);
-      }
-    };
+    return createSubscription(() => {
+      console.log(`Unsubscribed from agent interactions ${agentId}`);
+    });
   }
   
   async startCollaboration(
