@@ -4,14 +4,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AuthForm from "@/components/auth/AuthForm";
 import PageTransition from "@/components/shared/PageTransition";
 import { useUser, useSessionContext } from "@supabase/auth-helpers-react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const user = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { isLoading: isSessionLoading, error } = useSessionContext();
   
   // Determine if we're on the signup page
@@ -38,12 +40,26 @@ const Auth = () => {
       console.log("OAuth callback detected");
       setIsLoading(true);
     }
+    
+    // Check for error in URL params (such as from email confirmation)
+    const params = new URLSearchParams(window.location.search);
+    const errorDescription = params.get("error_description");
+    if (errorDescription) {
+      console.error("URL error detected:", errorDescription);
+      setAuthError(errorDescription);
+      toast({
+        title: "Authentication error",
+        description: errorDescription,
+        variant: "destructive",
+      });
+    }
   }, []);
 
   useEffect(() => {
     // Show error if there was a problem with the session
     if (error) {
       console.error("Session error:", error);
+      setAuthError(error.message);
       toast({
         title: "Authentication error",
         description: "There was a problem with your session. Please try again.",
@@ -67,6 +83,12 @@ const Auth = () => {
     <PageTransition>
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
         <div className="w-full max-w-md">
+          {authError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
           <AuthForm defaultTab={isSignUp ? "signup" : "signin"} />
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +8,11 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "@/hooks/use-toast";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { Separator } from "@/components/ui/separator";
-import { UserCheck, User, Database, Lock } from "lucide-react";
+import { UserCheck, User, Database, Lock, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordResetForm from "./PasswordResetForm";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthFormProps {
   defaultTab?: "signin" | "signup";
@@ -21,6 +23,8 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [signinError, setSigninError] = useState<string | null>(null);
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -30,8 +34,11 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
     
     try {
       setIsLoading(true);
+      setSignupError(null);
       
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting to sign up with email:", email);
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -39,20 +46,40 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
         },
       });
 
+      console.log("Signup response data:", data);
+
       if (error) {
+        console.error("Signup error:", error);
+        setSignupError(error.message);
         toast({
           title: "Sign up failed",
           description: error.message,
           variant: "destructive",
         });
+      } else if (data?.user) {
+        console.log("User created successfully:", data.user);
+        
+        if (data.user.identities && data.user.identities.length === 0) {
+          // This means the user already exists
+          setSignupError("An account with this email already exists. Please sign in instead.");
+          toast({
+            title: "Account already exists",
+            description: "An account with this email already exists. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link to complete your sign up.",
+          });
+        }
       } else {
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your sign up.",
-        });
+        console.log("No error but no user data returned");
+        setSignupError("Something went wrong. Please try again.");
       }
     } catch (error) {
       console.error("Sign up error:", error);
+      setSignupError("There was a problem creating your account. Please try again.");
       toast({
         title: "Sign up failed",
         description: "There was a problem creating your account. Please try again.",
@@ -68,23 +95,30 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
     
     try {
       setIsLoading(true);
+      setSigninError(null);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting to sign in with email:", email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error("Sign in error:", error);
+        setSigninError(error.message);
         toast({
           title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        console.log("User signed in successfully:", data.user);
         navigate("/dashboard");
       }
     } catch (error) {
       console.error("Sign in error:", error);
+      setSigninError("There was a problem signing in. Please try again.");
       toast({
         title: "Sign in failed",
         description: "There was a problem signing in. Please try again.",
@@ -125,6 +159,13 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
         <TabsContent value="signin">
           <form onSubmit={handleSignIn}>
             <CardContent className="space-y-4">
+              {signinError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{signinError}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="space-y-2">
                 <GoogleSignInButton mode="signin" />
               </div>
@@ -189,6 +230,13 @@ const AuthForm = ({ defaultTab = "signin" }: AuthFormProps) => {
         <TabsContent value="signup">
           <form onSubmit={handleSignUp}>
             <CardContent className="space-y-4">
+              {signupError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{signupError}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="space-y-2">
                 <GoogleSignInButton mode="signup" />
               </div>
