@@ -9,6 +9,7 @@ interface ThemePreference {
   theme: Theme;
   setTheme: (theme: Theme) => Promise<void>;
   isLoading: boolean;
+  toggleTheme: () => Promise<void>;
 }
 
 const ThemePreferenceContext = createContext<ThemePreference | undefined>(undefined);
@@ -137,8 +138,19 @@ export const ThemePreferenceProvider = ({ children }: { children: React.ReactNod
     }
   };
 
+  // Add a toggleTheme function to easily switch between light and dark
+  const toggleTheme = async () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    await setTheme(newTheme);
+    
+    toast({
+      title: `${newTheme.charAt(0).toUpperCase() + newTheme.slice(1)} mode activated`,
+      description: `Switched to ${newTheme} mode`,
+    });
+  };
+
   return (
-    <ThemePreferenceContext.Provider value={{ theme, setTheme, isLoading }}>
+    <ThemePreferenceContext.Provider value={{ theme, setTheme, isLoading, toggleTheme }}>
       {children}
     </ThemePreferenceContext.Provider>
   );

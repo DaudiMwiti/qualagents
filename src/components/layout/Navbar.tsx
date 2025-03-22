@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Database, Settings, LucideBot, User } from "lucide-react";
+import { Database, Settings, LucideBot, User, Moon, Sun } from "lucide-react";
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { toast } from "@/components/ui/use-toast";
+import { useThemePreference } from "@/hooks/use-theme-preference";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ const Navbar = () => {
   const location = useLocation();
   const supabase = useSupabaseClient();
   const user = useUser();
+  const { theme, toggleTheme } = useThemePreference();
   
   const isHome = location.pathname === "/";
   const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
@@ -99,6 +101,21 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center space-x-3">
+          {/* Theme Toggle Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9" 
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+        
           {!isHome && user && (
             <>
               <Button asChild variant="ghost" size="icon" className="h-9 w-9">
