@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/shared/PageTransition";
 import Navbar from "@/components/layout/Navbar";
@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import AgentChat from "@/components/project/AgentChat";
 import AgentExplainability from "@/components/project/AgentExplainability";
+import ProjectCreationForm from "@/components/project/ProjectCreationForm";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -23,22 +24,16 @@ import {
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Agent } from "@/services/agentService";
-
-const mockProject = {
-  id: "proj-1",
-  title: "Patient Experience Analysis",
-  description: "Investigating patient narratives about telehealth experiences during the pandemic.",
-  date: "June 2, 2023",
-  methodologies: ["Grounded Theory", "Phenomenology"],
-  collaborators: 2,
-  documents: 8,
-  status: "in-progress",
-};
+import { Agent } from "@/types/agent";
+import { projectService, Project } from "@/services/projectService";
+import { useToast } from "@/hooks/use-toast";
 
 const ProjectView = () => {
   const { id } = useParams();
-  const [project, setProject] = useState(mockProject);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeAgents, setActiveAgents] = useState<string[]>([
     "grounded-theory", "feminist-theory", "bias-identification"
   ]);
@@ -48,9 +43,23 @@ const ProjectView = () => {
     window.scrollTo(0, 0);
     
     if (id && id !== "new") {
-      console.log("Fetching project with ID:", id);
+      setLoading(true);
+      const projectData = projectService.getProject(id);
+      
+      if (projectData) {
+        setProject(projectData);
+      } else {
+        toast({
+          title: "Project not found",
+          description: "The requested project could not be found",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+      }
+      
+      setLoading(false);
     }
-  }, [id]);
+  }, [id, navigate, toast]);
   
   const handleAgentSelect = (agent: Agent) => {
     setSelectedAgent(agent);
@@ -61,6 +70,46 @@ const ProjectView = () => {
       <PageTransition>
         <Navbar />
         <NewProjectPage />
+        <Footer />
+      </PageTransition>
+    );
+  }
+  
+  if (loading) {
+    return (
+      <PageTransition>
+        <Navbar />
+        <main className="pt-24 min-h-screen">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="flex justify-center items-center h-64">
+              <p className="text-muted-foreground">Loading project...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </PageTransition>
+    );
+  }
+  
+  if (!project) {
+    return (
+      <PageTransition>
+        <Navbar />
+        <main className="pt-24 min-h-screen">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="flex justify-center items-center h-64">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">Project Not Found</h2>
+                <p className="text-muted-foreground mb-6">
+                  The project you're looking for doesn't exist or has been deleted.
+                </p>
+                <Button asChild>
+                  <Link to="/dashboard">Return to Dashboard</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
         <Footer />
       </PageTransition>
     );
@@ -320,27 +369,7 @@ const NewProjectPage = () => {
             </h1>
           </div>
           
-          <div className="glass-card p-8">
-            <h3 className="text-xl font-medium mb-6">New Project Setup</h3>
-            <p className="text-muted-foreground mb-8">
-              Configure your new research project and select the AI agents you want to use.
-            </p>
-            
-            <div className="flex justify-center items-center py-16">
-              <div className="text-center">
-                <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <p className="font-medium">Project Creation Coming Soon</p>
-                <p className="text-sm text-muted-foreground mt-2 mb-6">
-                  This feature is currently under development
-                </p>
-                <Button asChild>
-                  <Link to="/dashboard">
-                    Return to Dashboard
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ProjectCreationForm />
         </motion.div>
       </div>
     </main>

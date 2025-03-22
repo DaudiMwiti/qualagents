@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -17,63 +16,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileText, Plus, Search } from "lucide-react";
-
-// Mock data
-const mockProjects = [
-  {
-    id: "proj-1",
-    title: "Patient Experience Analysis",
-    description: "Investigating patient narratives about telehealth experiences during the pandemic.",
-    date: "June 2, 2023",
-    methodologies: ["Grounded Theory", "Phenomenology"],
-    collaborators: 2,
-  },
-  {
-    id: "proj-2",
-    title: "Social Media Discourse Study",
-    description: "Analyzing patterns in online discussion forums about climate change.",
-    date: "August 15, 2023",
-    methodologies: ["Discourse Analysis", "Narrative Analysis"],
-    collaborators: 0,
-  },
-  {
-    id: "proj-3",
-    title: "Educator Interviews",
-    description: "Examining teacher perspectives on remote learning challenges and solutions.",
-    date: "October 3, 2023",
-    methodologies: ["Phenomenology"],
-    collaborators: 3,
-  },
-  {
-    id: "proj-4",
-    title: "Product Feedback Analysis",
-    description: "Synthesizing user feedback from multiple sources for product improvement.",
-    date: "December 10, 2023",
-    methodologies: ["Grounded Theory"],
-    collaborators: 1,
-  },
-  {
-    id: "proj-5",
-    title: "Corporate Culture Study",
-    description: "Exploring narratives around work-from-home policies in different organizations.",
-    date: "January 22, 2024",
-    methodologies: ["Narrative Analysis", "Critical Discourse"],
-    collaborators: 2,
-  },
-];
+import { projectService, Project } from "@/services/projectService";
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProjects, setFilteredProjects] = useState(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [sortOption, setSortOption] = useState("recent");
   
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Load projects from service
+    setProjects(projectService.getProjects());
   }, []);
   
   useEffect(() => {
     // Filter projects based on search term
-    const filtered = mockProjects.filter(
+    const filtered = projects.filter(
       (project) =>
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +55,7 @@ const Dashboard = () => {
     });
     
     setFilteredProjects(sorted);
-  }, [searchTerm, sortOption]);
+  }, [searchTerm, sortOption, projects]);
 
   return (
     <PageTransition>
