@@ -1,15 +1,55 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import FileUploadSection from "./FileUploadSection";
 import TextPreprocessingSection from "./TextPreprocessingSection";
-import { FileWithPreview, PreprocessingFormValues } from "@/types/data-upload";
+import { 
+  FileWithPreview, 
+  PreprocessingFormValues,
+  PREPROCESSING_MIN_CHUNK_SIZE,
+  PREPROCESSING_MAX_CHUNK_SIZE,
+  PREPROCESSING_MIN_OVERLAP,
+  PREPROCESSING_MAX_OVERLAP
+} from "@/types/data-upload";
 
 interface DataUploadFormProps {
   projectId: string;
 }
+
+const preprocessingSchema = z.object({
+  chunkSize: z.string()
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return !isNaN(num);
+    }, "Must be a valid number")
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return num >= PREPROCESSING_MIN_CHUNK_SIZE;
+    }, `Must be at least ${PREPROCESSING_MIN_CHUNK_SIZE} characters`)
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return num <= PREPROCESSING_MAX_CHUNK_SIZE;
+    }, `Must be at most ${PREPROCESSING_MAX_CHUNK_SIZE} characters`),
+  overlap: z.string()
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return !isNaN(num);
+    }, "Must be a valid number")
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return num >= PREPROCESSING_MIN_OVERLAP;
+    }, `Must be at least ${PREPROCESSING_MIN_OVERLAP} characters`)
+    .refine(val => {
+      const num = parseInt(val, 10);
+      return num <= PREPROCESSING_MAX_OVERLAP;
+    }, `Must be at most ${PREPROCESSING_MAX_OVERLAP} characters`),
+  cleaningOptions: z.array(z.string()),
+  customRegex: z.string().optional(),
+});
 
 const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
@@ -17,6 +57,7 @@ const DataUploadForm: React.FC<DataUploadFormProps> = ({ projectId }) => {
   const [activeTab, setActiveTab] = useState("upload");
   
   const form = useForm<PreprocessingFormValues>({
+    resolver: zodResolver(preprocessingSchema),
     defaultValues: {
       chunkSize: "1000",
       overlap: "200",

@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { UseFormReturn } from "react-hook-form";
-import { PreprocessingFormValues } from "@/types/data-upload";
+import { 
+  PreprocessingFormValues, 
+  PREPROCESSING_MIN_CHUNK_SIZE,
+  PREPROCESSING_MAX_CHUNK_SIZE,
+  PREPROCESSING_MIN_OVERLAP,
+  PREPROCESSING_MAX_OVERLAP
+} from "@/types/data-upload";
 
 interface TextPreprocessingSectionProps {
   form: UseFormReturn<PreprocessingFormValues>;
@@ -48,10 +54,29 @@ const TextPreprocessingSection: React.FC<TextPreprocessingSectionProps> = ({
                   <FormItem>
                     <FormLabel>Chunk Size (characters)</FormLabel>
                     <FormControl>
-                      <Input type="number" min="100" max="10000" {...field} />
+                      <Input 
+                        type="number" 
+                        min={PREPROCESSING_MIN_CHUNK_SIZE} 
+                        max={PREPROCESSING_MAX_CHUNK_SIZE} 
+                        {...field} 
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = parseInt(value, 10);
+                          
+                          if (isNaN(numValue)) {
+                            field.onChange('');
+                          } else if (numValue < PREPROCESSING_MIN_CHUNK_SIZE) {
+                            field.onChange(PREPROCESSING_MIN_CHUNK_SIZE.toString());
+                          } else if (numValue > PREPROCESSING_MAX_CHUNK_SIZE) {
+                            field.onChange(PREPROCESSING_MAX_CHUNK_SIZE.toString());
+                          } else {
+                            field.onChange(value);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormDescription>
-                      How large each text segment should be
+                      How large each text segment should be ({PREPROCESSING_MIN_CHUNK_SIZE}-{PREPROCESSING_MAX_CHUNK_SIZE})
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -65,10 +90,29 @@ const TextPreprocessingSection: React.FC<TextPreprocessingSectionProps> = ({
                   <FormItem>
                     <FormLabel>Chunk Overlap</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" max="1000" {...field} />
+                      <Input 
+                        type="number" 
+                        min={PREPROCESSING_MIN_OVERLAP} 
+                        max={PREPROCESSING_MAX_OVERLAP} 
+                        {...field} 
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = parseInt(value, 10);
+                          
+                          if (isNaN(numValue)) {
+                            field.onChange('');
+                          } else if (numValue < PREPROCESSING_MIN_OVERLAP) {
+                            field.onChange(PREPROCESSING_MIN_OVERLAP.toString());
+                          } else if (numValue > PREPROCESSING_MAX_OVERLAP) {
+                            field.onChange(PREPROCESSING_MAX_OVERLAP.toString());
+                          } else {
+                            field.onChange(value);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormDescription>
-                      Character overlap between chunks
+                      Character overlap between chunks ({PREPROCESSING_MIN_OVERLAP}-{PREPROCESSING_MAX_OVERLAP})
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

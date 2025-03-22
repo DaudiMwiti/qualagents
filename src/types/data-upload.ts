@@ -12,3 +12,8 @@ export interface PreprocessingFormValues {
   cleaningOptions: string[];
   customRegex: string;
 }
+
+export const PREPROCESSING_MIN_CHUNK_SIZE = 100;
+export const PREPROCESSING_MAX_CHUNK_SIZE = 10000;
+export const PREPROCESSING_MIN_OVERLAP = 0;
+export const PREPROCESSING_MAX_OVERLAP = 1000;
