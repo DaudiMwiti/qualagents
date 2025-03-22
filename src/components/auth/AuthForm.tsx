@@ -5,19 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { Separator } from "@/components/ui/separator";
-import { UserCheck, User } from "lucide-react";
-import { Database } from "lucide-react";
+import { UserCheck, User, Database, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import PasswordResetForm from "./PasswordResetForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showResetForm, setShowResetForm] = useState(false);
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +92,10 @@ const AuthForm = () => {
     }
   };
 
+  if (showResetForm) {
+    return <PasswordResetForm onBackToLogin={() => setShowResetForm(false)} />;
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg">
       <CardHeader className="space-y-2 text-center">
@@ -126,25 +133,45 @@ const AuthForm = () => {
               </div>
               
               <div className="space-y-2">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <div className="flex items-center border rounded-md pl-3">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="flex items-center border rounded-md pl-3">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
+                <div className="text-right">
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-xs"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowResetForm(true);
+                    }}
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
               </div>
             </CardContent>
             
@@ -170,26 +197,34 @@ const AuthForm = () => {
               </div>
               
               <div className="space-y-2">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <div className="flex items-center border rounded-md pl-3">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="flex items-center border rounded-md pl-3">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
               </div>
             </CardContent>
             

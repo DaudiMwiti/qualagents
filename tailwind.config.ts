@@ -37,6 +37,18 @@ export default {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
+				success: {
+					DEFAULT: 'hsl(var(--success, 142 71% 45%))',
+					foreground: 'hsl(var(--success-foreground, 0 0% 98%))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info, 221 83% 53%))',
+					foreground: 'hsl(var(--info-foreground, 0 0% 98%))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning, 38 92% 50%))',
+					foreground: 'hsl(var(--warning-foreground, 0 0% 98%))'
+				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'

@@ -12,20 +12,21 @@ import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Loader2, User, Mail, LogIn, Save, Trash } from "lucide-react";
+import { Loader2, User, Mail, LogIn, Save, Trash, Moon, Sun, Monitor } from "lucide-react";
 import PageTransition from "@/components/shared/PageTransition";
 import { getGravatarUrl } from "@/utils/profileUtils";
+import { useThemePreference } from "@/hooks/use-theme-preference";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define the profile schema
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   defaultExportFormat: z.enum(["pdf", "csv", "markdown", "json"]),
   preferredMethodologies: z.array(z.string()),
-  darkMode: z.boolean().default(false),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -37,6 +38,8 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loginProvider, setLoginProvider] = useState<string>("email");
+  const { theme, setTheme } = useThemePreference();
+  const isMobile = useIsMobile();
   
   // Profile form
   const form = useForm<ProfileFormValues>({
@@ -45,7 +48,6 @@ const Profile = () => {
       name: "",
       defaultExportFormat: "pdf",
       preferredMethodologies: [],
-      darkMode: false,
     },
   });
 
@@ -101,7 +103,6 @@ const Profile = () => {
             name: profile.name || user.user_metadata?.full_name || "",
             defaultExportFormat: preferences.defaultExportFormat || "pdf",
             preferredMethodologies: preferences.preferredMethodologies || [],
-            darkMode: preferences.darkMode || false,
           });
         }
       } catch (error) {
@@ -125,11 +126,20 @@ const Profile = () => {
     try {
       setIsLoading(true);
       
-      // Extract preferences to store as JSONB
+      // Get existing preferences to merge with new ones
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("preferences")
+        .eq("id", user.id)
+        .single();
+        
+      const existingPreferences = existingProfile?.preferences || {};
+      
+      // Extract preferences to store as JSONB, preserving existing theme preference
       const preferences = {
+        ...existingPreferences,
         defaultExportFormat: values.defaultExportFormat,
         preferredMethodologies: values.preferredMethodologies,
-        darkMode: values.darkMode,
       };
       
       // Update profile in Supabase
@@ -155,6 +165,7 @@ const Profile = () => {
       toast({
         title: "Success",
         description: "Your profile has been updated.",
+        variant: "success",
       });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -172,10 +183,10 @@ const Profile = () => {
   
   return (
     <PageTransition>
-      <div className="container max-w-5xl py-10">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold mb-2">User Profile</h1>
-          <p className="text-muted-foreground">
+      <div className="container max-w-5xl py-6 md:py-10 px-4 md:px-8">
+        <div className="mb-6 md:mb-10">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">User Profile</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Manage your account information and preferences
           </p>
         </div>
@@ -183,40 +194,62 @@ const Profile = () => {
         <div className="grid gap-6 md:grid-cols-12">
           {/* User info card */}
           <Card className="md:col-span-4">
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
+            <CardHeader className={isMobile ? "px-4 py-4" : ""}>
+              <CardTitle className={isMobile ? "text-lg" : ""}>Account Information</CardTitle>
               <CardDescription>Your personal details</CardDescription>
             </CardHeader>
             
-            <CardContent className="flex flex-col items-center space-y-4">
-              <Avatar className="h-24 w-24 border-2 border-primary/10">
+            <CardContent className={`flex flex-col items-center space-y-4 ${isMobile ? "px-4 py-2" : ""}`}>
+              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-2 border-primary/10">
                 <AvatarImage src={avatarUrl || ""} alt={user.email || "User"} />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-xl md:text-2xl">
                   {user.email?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               
               <div className="text-center">
-                <h3 className="text-xl font-semibold">
+                <h3 className="text-lg md:text-xl font-semibold">
                   {user.user_metadata?.full_name || form.getValues().name || "User"}
                 </h3>
                 <div className="flex items-center justify-center text-muted-foreground gap-1 mt-1">
                   <Mail className="h-4 w-4" />
-                  <span className="text-sm">{user.email}</span>
+                  <span className="text-xs md:text-sm">{user.email}</span>
                 </div>
               </div>
               
               <div className="flex items-center gap-2 mt-2">
                 <LogIn className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Signed in with:</span>
-                <Badge variant="outline" className="capitalize">
+                <span className="text-xs md:text-sm text-muted-foreground">Signed in with:</span>
+                <Badge variant="outline" className="capitalize text-xs">
                   {loginProvider}
                 </Badge>
               </div>
             </CardContent>
             
-            <CardFooter className="flex justify-center">
-              <Button variant="outline" onClick={() => navigate("/settings")}>
+            <CardFooter className={`flex flex-col space-y-3 ${isMobile ? "px-4 py-4" : ""}`}>
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Theme</span>
+                  <ToggleGroup type="single" variant="outline" value={theme} onValueChange={(value: any) => value && setTheme(value)}>
+                    <ToggleGroupItem value="light" size="sm" className="w-9 h-9">
+                      <Sun className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="dark" size="sm" className="w-9 h-9">
+                      <Moon className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="system" size="sm" className="w-9 h-9">
+                      <Monitor className="h-4 w-4" />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full mt-2" 
+                onClick={() => navigate("/settings")}
+                size={isMobile ? "sm" : "default"}
+              >
                 Manage Account
               </Button>
             </CardFooter>
@@ -224,19 +257,19 @@ const Profile = () => {
           
           {/* Preferences form */}
           <Card className="md:col-span-8">
-            <CardHeader>
-              <CardTitle>Preferences</CardTitle>
+            <CardHeader className={isMobile ? "px-4 py-4" : ""}>
+              <CardTitle className={isMobile ? "text-lg" : ""}>Preferences</CardTitle>
               <CardDescription>Customize your QualAgents experience</CardDescription>
             </CardHeader>
             
-            <CardContent>
+            <CardContent className={isMobile ? "px-4 py-2" : ""}>
               {isLoading ? (
-                <div className="flex items-center justify-center h-48">
+                <div className="flex items-center justify-center h-40 md:h-48">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSaveProfile)} className="space-y-6">
+                  <form onSubmit={form.handleSubmit(handleSaveProfile)} className="space-y-4 md:space-y-6">
                     <FormField
                       control={form.control}
                       name="name"
@@ -249,7 +282,7 @@ const Profile = () => {
                               <Input placeholder="Your name" {...field} />
                             </div>
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-xs">
                             This is how you'll appear in the application
                           </FormDescription>
                           <FormMessage />
@@ -257,7 +290,7 @@ const Profile = () => {
                       )}
                     />
                     
-                    <Separator />
+                    <Separator className="my-4" />
                     
                     <FormField
                       control={form.control}
@@ -281,7 +314,7 @@ const Profile = () => {
                               <SelectItem value="json">JSON Data</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormDescription>
+                          <FormDescription className="text-xs">
                             This format will be used when exporting insights
                           </FormDescription>
                           <FormMessage />
@@ -323,7 +356,7 @@ const Profile = () => {
                               </ToggleGroupItem>
                             </ToggleGroup>
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-xs">
                             These will be suggested when creating new projects
                           </FormDescription>
                           <FormMessage />
@@ -331,49 +364,60 @@ const Profile = () => {
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="darkMode"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Dark Mode</FormLabel>
-                            <FormDescription>
-                              Switch between light and dark themes
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end space-x-2">
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={() => form.reset()}
-                      >
-                        <Trash className="w-4 h-4 mr-2" />
-                        Reset
-                      </Button>
-                      <Button type="submit" disabled={isLoading}>
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <Save className="w-4 h-4 mr-2" />
-                        )}
-                        Save Changes
-                      </Button>
-                    </div>
+                    {!isMobile && (
+                      <div className="flex justify-end space-x-2 pt-2">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={() => form.reset()}
+                        >
+                          <Trash className="w-4 h-4 mr-2" />
+                          Reset
+                        </Button>
+                        <Button type="submit" disabled={isLoading}>
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4 mr-2" />
+                          )}
+                          Save Changes
+                        </Button>
+                      </div>
+                    )}
                   </form>
                 </Form>
               )}
             </CardContent>
+            
+            {isMobile && (
+              <CardFooter className="px-4 py-4">
+                <div className="flex w-full justify-between space-x-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => form.reset()}
+                  >
+                    <Trash className="w-3 h-3 mr-1" />
+                    Reset
+                  </Button>
+                  <Button 
+                    size="sm"
+                    className="flex-1"
+                    disabled={isLoading}
+                    onClick={form.handleSubmit(handleSaveProfile)}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="w-3 h-3 mr-1" />
+                    )}
+                    Save
+                  </Button>
+                </div>
+              </CardFooter>
+            )}
           </Card>
         </div>
       </div>

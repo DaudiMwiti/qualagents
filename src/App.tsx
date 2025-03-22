@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createClient } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { ThemePreferenceProvider } from './hooks/use-theme-preference';
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import ProjectView from "./pages/ProjectView";
@@ -15,6 +16,7 @@ import AgentSettings from "./pages/AgentSettings";
 import NotFound from "./pages/NotFound";
 import DataUpload from "./pages/DataUpload";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import AnalysisResults from "./pages/AnalysisResults";
 
@@ -57,27 +59,30 @@ try {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <SessionContextProvider supabaseClient={supabase}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/signup" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/project/:id" element={<ProjectView />} />
-            <Route path="/project/:projectId/results/:batchId" element={<AnalysisResults />} />
-            <Route path="/project-insights/:id" element={<ProjectInsights />} />
-            <Route path="/data-upload/:projectId?" element={<DataUpload />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/agent-settings" element={<AgentSettings />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemePreferenceProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Auth />} />
+              <Route path="/signup" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/project/:id" element={<ProjectView />} />
+              <Route path="/project/:projectId/results/:batchId" element={<AnalysisResults />} />
+              <Route path="/project-insights/:id" element={<ProjectInsights />} />
+              <Route path="/data-upload/:projectId?" element={<DataUpload />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/agent-settings" element={<AgentSettings />} />
+              <Route path="/profile" element={<Profile />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemePreferenceProvider>
     </SessionContextProvider>
   </QueryClientProvider>
 );
