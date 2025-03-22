@@ -9,6 +9,7 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import ProjectView from "./pages/ProjectView";
+import ProjectInsights from "./pages/ProjectInsights";
 import Settings from "./pages/Settings";
 import AgentSettings from "./pages/AgentSettings";
 import NotFound from "./pages/NotFound";
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/signup" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/project/:id" element={<ProjectView />} />
+            <Route path="/project-insights/:id" element={<ProjectInsights />} />
             <Route path="/data-upload/:projectId?" element={<DataUpload />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/agent-settings" element={<AgentSettings />} />

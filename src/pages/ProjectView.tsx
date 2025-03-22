@@ -20,6 +20,7 @@ import {
   Users,
   Brain,
   Info,
+  ArrowUpRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -179,6 +180,16 @@ const ProjectView = () => {
                     Upload Data
                   </Link>
                 </Button>
+                <Button 
+                  asChild
+                  variant="default"
+                  className="h-9"
+                >
+                  <Link to={`/project-insights/${id}`}>
+                    <BarChart className="mr-2 h-4 w-4" />
+                    View Insights
+                  </Link>
+                </Button>
               </div>
             </div>
             
@@ -272,16 +283,23 @@ const ProjectView = () => {
               <TabsContent value="insights" className="m-0">
                 <div className="glass-card p-8">
                   <h3 className="text-xl font-medium mb-6">Research Insights</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-6">
                     This section will display aggregated insights from all agents, organized by themes and categories.
                   </p>
-                  <div className="flex justify-center items-center py-16">
+                  <div className="flex justify-center items-center py-8">
                     <div className="text-center">
                       <BarChart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <p className="font-medium">Insight Visualization Coming Soon</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Insights will appear here as AI agents analyze your data
+                      <p className="font-medium mb-2">Access the Complete Insights Dashboard</p>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        View comprehensive data visualizations, trends, and key findings
                       </p>
+                      <Button asChild>
+                        <Link to={`/project-insights/${id}`}>
+                          <BarChart className="mr-2 h-4 w-4" />
+                          Open Insights Dashboard 
+                          <ArrowUpRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
