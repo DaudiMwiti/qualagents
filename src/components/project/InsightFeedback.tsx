@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { agentService } from "@/services/agentService";
+import { InsightFeedback as InsightFeedbackType } from "@/types/agent";
 
 interface InsightFeedbackProps {
   insightId?: string;
