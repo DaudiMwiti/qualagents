@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -15,6 +14,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { analysisService, AnalysisStatus, AnalysisResult } from "@/services/analysisService";
 import { InsightsTab } from "@/components/insights/tabs/InsightsTab";
+import { ProjectInsights } from "@/services/insightsService";
 
 const AnalysisResults = () => {
   const { projectId, batchId } = useParams();
@@ -27,10 +27,8 @@ const AnalysisResults = () => {
   useEffect(() => {
     if (!batchId) return;
     
-    // Initial fetch
     fetchStatus();
     
-    // Set up polling for status updates
     const intervalId = setInterval(fetchStatus, 2000);
     
     return () => {
@@ -46,7 +44,6 @@ const AnalysisResults = () => {
       setStatus(currentStatus);
       
       if (currentStatus.status === 'completed') {
-        // If completed, fetch results
         const analysisResults = await analysisService.getAnalysisResults(batchId);
         setResults(analysisResults);
         setLoading(false);
@@ -195,8 +192,7 @@ const AnalysisResults = () => {
     );
   }
   
-  // Prepare the insights data for the InsightsTab component
-  const insightsData = {
+  const insightsData: ProjectInsights = {
     topInsights: results.insights.map(insight => ({
       id: insight.id,
       text: insight.text,
@@ -205,7 +201,25 @@ const AnalysisResults = () => {
       relevance: insight.relevance,
       methodology: insight.methodology,
       date: new Date().toLocaleDateString()
-    }))
+    })),
+    metrics: [
+      {
+        id: "metrics-1",
+        name: "Total Insights",
+        value: results.insights.length,
+        status: "positive",
+        description: "Total number of insights found in your data"
+      }
+    ],
+    categories: Object.keys(results.agentResults).map(agentId => ({
+      id: `cat-${agentId}`,
+      name: agentId.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' '),
+      count: results.agentResults[agentId].length
+    })),
+    trends: [],
+    thematicClusters: []
   };
   
   return (
