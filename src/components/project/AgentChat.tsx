@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Button } from '@/components/ui/button';
@@ -299,47 +298,17 @@ function generateAgentResponse(agentId: string, userMessage: string): string {
       "The discursive construction of 'expertise' varies significantly across demographic groups in your sample.",
       "Your data shows interesting linguistic patterns in how participants position themselves in relation to technology.",
     ],
-    'narrative-analysis': [
-      "The stories your participants tell follow common narrative arcs of challenge, adaptation, and mastery.",
-      "I've identified three distinct narrative typologies across your interview data.",
-      "The temporal organization of participant stories reveals shifting perspectives over time.",
-      "Your participants' narratives construct technology as both antagonist and ally in their personal stories.",
-    ],
     'feminist-theory': [
       "Your data reveals gendered patterns in how participants navigate technological spaces.",
       "I'm seeing evidence of how technological design reinforces certain power structures.",
       "The intersection of gender with other identities appears significant in how participants engage with the system.",
       "Your findings could benefit from considering how care work is distributed in technological contexts.",
     ],
-    'critical-race-theory': [
-      "Analysis reveals racial disparities in how participants experience and access the technology.",
-      "I'm examining how the design choices may inadvertently perpetuate systemic inequalities.",
-      "Your data shows interesting patterns in how different racial groups perceive algorithmic decision-making.",
-      "Counter-narratives in your minority participant interviews challenge dominant assumptions about technology use.",
-    ],
     'bias-identification': [
       "I've detected potential confirmation bias in how you've interpreted participant responses in section 3.",
       "Your sampling method may have introduced selection bias favoring tech-savvy participants.",
       "There's some evidence of anchoring bias in how you've framed questions about user satisfaction.",
       "I recommend reviewing for potential in-group bias in how you've categorized participant experiences.",
-    ],
-    'assumption-validation': [
-      "Your assumption that age correlates with technology comfort isn't fully supported by the data.",
-      "I've validated your core assumption about privacy concerns across all demographic groups.",
-      "The data challenges your initial assumption about user motivations for using this feature.",
-      "Your framework relies on an unexamined assumption about user goals that requires validation.",
-    ],
-    'triangulation': [
-      "Comparing qualitative interviews with usage data confirms your findings about feature adoption.",
-      "I've triangulated findings across methods and found consistency in privacy concern themes.",
-      "Cross-referencing survey and interview data reveals some discrepancies in reported behaviors.",
-      "Methodological triangulation strengthens your conclusions about user preferences.",
-    ],
-    'member-checking': [
-      "Participant feedback confirms your interpretation of their experiences with the system.",
-      "Two participants disagreed with your characterization of their attitudes toward data sharing.",
-      "Member checking strengthened your analysis by clarifying ambiguous statements in interviews.",
-      "Sharing preliminary findings with participants yielded valuable insights for refining your theory.",
     ],
   };
   

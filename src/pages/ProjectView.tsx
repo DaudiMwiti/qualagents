@@ -6,6 +6,7 @@ import PageTransition from "@/components/shared/PageTransition";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
+import AgentChat from "@/components/project/AgentChat";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -16,10 +17,12 @@ import {
   Settings,
   Upload,
   Users,
+  Brain,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Agent } from "@/services/agentService";
 
 // Mock data project
 const mockProject = {
@@ -36,6 +39,9 @@ const mockProject = {
 const ProjectView = () => {
   const { id } = useParams();
   const [project, setProject] = useState(mockProject);
+  const [activeAgents, setActiveAgents] = useState<string[]>([
+    "grounded-theory", "feminist-theory", "bias-identification"
+  ]);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -147,8 +153,12 @@ const ProjectView = () => {
             <Tabs defaultValue="agents">
               <TabsList className="mb-8 bg-secondary/50">
                 <TabsTrigger value="agents" className="flex">
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <Brain className="h-4 w-4 mr-2" />
                   AI Agents
+                </TabsTrigger>
+                <TabsTrigger value="chat" className="flex">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Agent Chat
                 </TabsTrigger>
                 <TabsTrigger value="insights" className="flex">
                   <BarChart className="h-4 w-4 mr-2" />
@@ -166,6 +176,12 @@ const ProjectView = () => {
               
               <TabsContent value="agents" className="m-0">
                 <AgentVisualizer projectId={project.id} />
+              </TabsContent>
+              
+              <TabsContent value="chat" className="m-0">
+                <div className="h-[600px]">
+                  <AgentChat projectId={project.id} activeAgents={activeAgents} />
+                </div>
               </TabsContent>
               
               <TabsContent value="insights" className="m-0">
