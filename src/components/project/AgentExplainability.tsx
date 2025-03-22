@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Agent } from "@/services/agentService";
 import { 
@@ -21,6 +20,7 @@ import InsightFeedback, { InsightFeedbackData } from "./InsightFeedback";
 
 interface AgentExplainabilityProps {
   agent: Agent;
+  onInsightFeedback?: (insightId: string | undefined, agentId: string, insightContent: string) => void;
 }
 
 interface ReasoningStep {
@@ -39,7 +39,7 @@ interface DecisionNode {
   children?: DecisionNode[];
 }
 
-const AgentExplainability = ({ agent }: AgentExplainabilityProps) => {
+const AgentExplainability = ({ agent, onInsightFeedback }: AgentExplainabilityProps) => {
   const supabase = useSupabaseClient();
   const [tab, setTab] = useState<'reasoning' | 'decision-tree' | 'confidence' | 'sources'>('reasoning');
   const [reasoningSteps, setReasoningSteps] = useState<ReasoningStep[]>([]);
@@ -52,15 +52,12 @@ const AgentExplainability = ({ agent }: AgentExplainabilityProps) => {
     const fetchAgentExplainability = async () => {
       setLoading(true);
       try {
-        // In a real implementation, this would fetch data from the backend
-        // For now, we'll use mock data
         const mockReasoningSteps = getMockReasoningSteps(agent);
         const mockDecisionTree = getMockDecisionTree(agent);
         
         setReasoningSteps(mockReasoningSteps);
         setDecisionTree(mockDecisionTree);
         
-        // Fetch any existing feedback for this agent's insights
         if (supabase) {
           try {
             const { data } = await supabase
@@ -104,7 +101,6 @@ const AgentExplainability = ({ agent }: AgentExplainabilityProps) => {
   };
   
   const handleFeedbackSaved = (feedback: InsightFeedbackData) => {
-    // Update local feedback state
     setFeedbackData(prev => ({
       ...prev,
       [feedback.insightId || feedback.insight]: feedback
@@ -480,7 +476,6 @@ const DecisionTreeNode = ({
   );
 };
 
-// Mock data functions
 function getMockReasoningSteps(agent: Agent): ReasoningStep[] {
   const methodology = agent.methodology || agent.framework || agent.type;
   const baseSteps = [
@@ -521,7 +516,6 @@ function getMockReasoningSteps(agent: Agent): ReasoningStep[] {
     }
   ];
 
-  // Add agent-specific reasoning steps
   if (agent.id === "grounded-theory") {
     baseSteps.splice(2, 0, {
       id: "gt-special-1",
@@ -554,7 +548,6 @@ function getMockReasoningSteps(agent: Agent): ReasoningStep[] {
 function getMockDecisionTree(agent: Agent): DecisionNode {
   const methodology = agent.methodology || agent.framework || agent.type;
   
-  // Base decision tree structure
   const decisionTree: DecisionNode = {
     id: "root",
     description: `Apply ${methodology} approach to qualitative data analysis`,
@@ -619,7 +612,6 @@ function getMockDecisionTree(agent: Agent): DecisionNode {
     ]
   };
   
-  // Customize based on agent type
   if (agent.id === "grounded-theory") {
     decisionTree.children![0].children!.push({
       id: "gt-node-1",

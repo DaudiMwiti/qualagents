@@ -32,9 +32,10 @@ import { saveAs } from 'file-saver';
 type AgentVisualizerProps = {
   projectId: string;
   onAgentSelect?: (agent: Agent) => void;
+  onInsightFeedback?: (insightId: string | undefined, agentId: string, insightContent: string) => void;
 };
 
-const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => {
+const AgentVisualizer = ({ projectId, onAgentSelect, onInsightFeedback }: AgentVisualizerProps) => {
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
