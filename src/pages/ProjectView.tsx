@@ -14,6 +14,7 @@ import ProjectCollaboratorDialog from "@/components/project/ProjectCollaboratorD
 import InsightFeedbackDialog from "@/components/project/InsightFeedbackDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft,
   BarChart,
