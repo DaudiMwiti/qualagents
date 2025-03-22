@@ -383,6 +383,7 @@ const AgentSettings = () => {
     setIsAgentExecutionSkillsEnabled(agent.is_execution_skills_enabled);
     setIsAgentMonitoringSkillsEnabled(agent.is_monitoring_skills_enabled);
     setIsAgentEvaluationSkillsEnabled(agent.is_evaluation_skills_enabled);
+    setIsAgentAdaptationSkillsEnabled(agent.is_adaptation_skills_enabled);
   };
 
   const handleEditClick = () => {
@@ -460,4 +461,15 @@ const AgentSettings = () => {
       setIsAgentToleranceSkillsEnabled(selectedAgent.is_tolerance_skills_enabled);
       setIsAgentAcceptanceSkillsEnabled(selectedAgent.is_acceptance_skills_enabled);
       setIsAgentInclusivitySkillsEnabled(selectedAgent.is_inclusivity_skills_enabled);
-      setIsAgentDiversitySkills
+      setIsAgentDiversitySkillsEnabled(selectedAgent.is_diversity_skills_enabled);
+    }
+  };
+
+  return (
+    <PageTransition>
+      <div>Agent Settings Content</div>
+    </PageTransition>
+  );
+};
+
+export default AgentSettings;
