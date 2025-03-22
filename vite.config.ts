@@ -22,5 +22,8 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     'process.env.USE_LANGGRAPH_BACKEND': JSON.stringify(process.env.USE_LANGGRAPH_BACKEND)
-  }
+  },
+  esbuild: {
+    sourcemap: false, // 🔧 This disables sourcemap processing and avoids source map crashes
+  },
 }));
