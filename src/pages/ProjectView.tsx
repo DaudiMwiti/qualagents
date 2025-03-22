@@ -30,7 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Agent } from "@/types/agent";
 import { projectService, Project } from "@/services/projectService";
 import { useToast } from "@/hooks/use-toast";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 const ProjectView = () => {
   const { id } = useParams();
