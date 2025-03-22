@@ -8,6 +8,7 @@ import AgentVisualizer from "@/components/project/AgentVisualizer";
 import AgentChat from "@/components/project/AgentChat";
 import AgentExplainability from "@/components/project/AgentExplainability";
 import ProjectCreationForm from "@/components/project/ProjectCreationForm";
+import RunAnalysisButton from "@/components/analysis/RunAnalysisButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -21,6 +22,7 @@ import {
   Brain,
   Info,
   ArrowUpRight,
+  Play,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -180,9 +182,15 @@ const ProjectView = () => {
                     Upload Data
                   </Link>
                 </Button>
+                <RunAnalysisButton
+                  projectId={project.id}
+                  agentIds={activeAgents}
+                  documentCount={project.documents}
+                  className="h-9"
+                />
                 <Button 
                   asChild
-                  variant="default"
+                  variant="outline"
                   className="h-9"
                 >
                   <Link to={`/project-insights/${id}`}>

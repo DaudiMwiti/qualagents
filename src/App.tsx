@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import DataUpload from "./pages/DataUpload";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import AnalysisResults from "./pages/AnalysisResults";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +67,7 @@ const App = () => (
             <Route path="/signup" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/project/:id" element={<ProjectView />} />
+            <Route path="/project/:projectId/results/:batchId" element={<AnalysisResults />} />
             <Route path="/project-insights/:id" element={<ProjectInsights />} />
             <Route path="/data-upload/:projectId?" element={<DataUpload />} />
             <Route path="/settings" element={<Settings />} />
