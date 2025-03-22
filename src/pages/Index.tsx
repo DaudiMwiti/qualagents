@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,6 +12,7 @@ import { Brain, Database, FileText, BarChart4, MessageSquare, Users, Lightbulb, 
 const Index = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
+    console.log("Index page rendered"); // Debug log
   }, []);
 
   const features = [
@@ -49,11 +49,11 @@ const Index = () => {
   ];
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <AnimatedBackground />
       <Navbar />
       
-      <main>
+      <main className="flex-grow">
         {/* Hero Section */}
         <section className="pt-32 md:pt-40 pb-20 md:pb-32 px-6 relative overflow-hidden">
           <div className="absolute inset-0 bg-mesh-pattern opacity-50 -z-10"></div>
@@ -242,7 +242,7 @@ const Index = () => {
       </main>
       
       <Footer />
-    </>
+    </div>
   );
 };
 

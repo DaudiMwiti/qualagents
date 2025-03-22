@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,7 +18,15 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import AnalysisResults from "./pages/AnalysisResults";
 
-const queryClient = new QueryClient();
+// Create a query client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Initialize the Supabase client with proper error handling
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -55,34 +62,38 @@ try {
   };
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SessionContextProvider supabaseClient={supabase}>
-      <ThemePreferenceProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Auth />} />
-              <Route path="/signup" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/project/:id" element={<ProjectView />} />
-              <Route path="/project/:projectId/results/:batchId" element={<AnalysisResults />} />
-              <Route path="/project-insights/:id" element={<ProjectInsights />} />
-              <Route path="/data-upload/:projectId?" element={<DataUpload />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/agent-settings" element={<AgentSettings />} />
-              <Route path="/profile" element={<Profile />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemePreferenceProvider>
-    </SessionContextProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log("App component rendering"); // Debug log
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
+        <ThemePreferenceProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/signup" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/project/:id" element={<ProjectView />} />
+                <Route path="/project/:projectId/results/:batchId" element={<AnalysisResults />} />
+                <Route path="/project-insights/:id" element={<ProjectInsights />} />
+                <Route path="/data-upload/:projectId?" element={<DataUpload />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/agent-settings" element={<AgentSettings />} />
+                <Route path="/profile" element={<Profile />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemePreferenceProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
