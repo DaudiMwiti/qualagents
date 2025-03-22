@@ -1,17 +1,36 @@
 
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import DataUploadForm from "@/components/data/DataUploadForm";
 import PageTransition from "@/components/shared/PageTransition";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const DataUpload = () => {
   const { projectId } = useParams();
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [hasExistingDocuments, setHasExistingDocuments] = useState(false);
+  const [documentCount, setDocumentCount] = useState(0);
+  
+  useEffect(() => {
+    if (projectId) {
+      // Check for existing documents in this project
+      const documentData = localStorage.getItem(`project_${projectId}_documents`);
+      if (documentData) {
+        try {
+          const data = JSON.parse(documentData);
+          setHasExistingDocuments(true);
+          setDocumentCount(data.count || 0);
+        } catch (e) {
+          console.error("Error parsing document data:", e);
+        }
+      }
+    }
+  }, [projectId]);
 
   return (
     <PageTransition>
@@ -40,11 +59,42 @@ const DataUpload = () => {
               </h1>
             </div>
             
-            <p className="text-muted-foreground mb-8 max-w-3xl">
+            <p className="text-muted-foreground mb-4 max-w-3xl">
               Upload your research data files for agent analysis. All documents will be automatically preprocessed for optimal analysis.
             </p>
             
-            <DataUploadForm projectId={projectId || ""} />
+            {hasExistingDocuments && (
+              <Alert className="mb-6">
+                <FileText className="h-4 w-4" />
+                <AlertTitle>Existing Documents</AlertTitle>
+                <AlertDescription className="flex justify-between items-center">
+                  <span>You already have {documentCount} documents processed in this project.</span>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/project/${projectId}`)}
+                    >
+                      Return to Project
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        localStorage.removeItem(`project_${projectId}_documents`);
+                        setHasExistingDocuments(false);
+                        setDocumentCount(0);
+                      }}
+                    >
+                      Upload New Documents
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {(!hasExistingDocuments || documentCount === 0) && (
+              <DataUploadForm projectId={projectId || ""} />
+            )}
           </motion.div>
         </div>
       </main>

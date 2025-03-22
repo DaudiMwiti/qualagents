@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { analysisService } from "@/services/analysisService";
@@ -10,7 +10,7 @@ import { toast as sonnerToast } from "sonner";
 interface RunAnalysisButtonProps {
   projectId: string;
   agentIds: string[];
-  documentCount: number;
+  documentCount?: number;
   className?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
@@ -20,23 +20,44 @@ interface RunAnalysisButtonProps {
 const RunAnalysisButton = ({
   projectId,
   agentIds,
-  documentCount,
+  documentCount: propDocumentCount,
   className,
   variant = "default",
   size = "default",
   showLabel = true
 }: RunAnalysisButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [actualDocumentCount, setActualDocumentCount] = useState(propDocumentCount || 0);
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Check for documents in localStorage if none provided via props
+  useEffect(() => {
+    if (propDocumentCount === undefined || propDocumentCount === 0) {
+      try {
+        const documentData = localStorage.getItem(`project_${projectId}_documents`);
+        if (documentData) {
+          const data = JSON.parse(documentData);
+          if (data && data.count) {
+            setActualDocumentCount(data.count);
+          }
+        }
+      } catch (e) {
+        console.error("Error checking document count:", e);
+      }
+    }
+  }, [projectId, propDocumentCount]);
+  
   const handleRunAnalysis = async () => {
-    if (documentCount === 0) {
+    if (actualDocumentCount === 0) {
       toast({
         variant: "destructive",
         title: "No documents to analyze",
         description: "Please upload at least one document before running analysis."
       });
+      
+      // Direct the user to the upload page
+      navigate(`/data-upload/${projectId}`);
       return;
     }
     
@@ -87,7 +108,7 @@ const RunAnalysisButton = ({
   return (
     <Button
       onClick={handleRunAnalysis}
-      disabled={isLoading || documentCount === 0}
+      disabled={isLoading || (actualDocumentCount === 0)}
       variant={variant}
       size={size}
       className={`${className} relative overflow-hidden group`}

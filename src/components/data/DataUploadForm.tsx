@@ -1,14 +1,15 @@
 
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { toast as sonnerToast } from "sonner";
 
 interface DataUploadFormProps {
   projectId: string;
@@ -20,6 +21,7 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setUploadedFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -45,6 +47,12 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
     setProgress(0);
     
     try {
+      // Show upload started toast
+      sonnerToast.loading("Uploading files...", {
+        description: `Uploading ${uploadedFiles.length} files`,
+        id: "upload-progress"
+      });
+      
       // Simulate upload progress
       const progressInterval = setInterval(() => {
         setProgress(prev => {
@@ -64,19 +72,19 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
       setProgress(100);
       setIsUploading(false);
       
-      toast({
-        title: "Files uploaded successfully",
+      // Update toast
+      sonnerToast.success("Files uploaded successfully", {
         description: `${uploadedFiles.length} files have been uploaded.`,
+        id: "upload-progress"
       });
       
       // Start background processing
       handleProcessing();
     } catch (error) {
       setIsUploading(false);
-      toast({
-        title: "Upload failed",
+      sonnerToast.error("Upload failed", {
         description: "There was an error uploading your files. Please try again.",
-        variant: "destructive",
+        id: "upload-progress"
       });
       console.error("Error uploading files:", error);
     }
@@ -87,9 +95,9 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
     setProgress(0);
     
     // Show processing toast
-    toast({
-      title: "Processing documents...",
+    sonnerToast.loading("Processing documents...", {
       description: "Your documents are being preprocessed for analysis.",
+      id: "processing"
     });
     
     try {
@@ -112,21 +120,28 @@ const DataUploadForm = ({ projectId }: DataUploadFormProps) => {
       clearInterval(processingInterval);
       setProgress(100);
       
-      toast({
-        title: "Processing complete",
+      sonnerToast.success("Processing complete", {
         description: "Your documents are ready for analysis.",
+        id: "processing"
       });
+      
+      // Save document data to localStorage to simulate persistence
+      localStorage.setItem(`project_${projectId}_documents`, JSON.stringify({
+        count: uploadedFiles.length,
+        names: uploadedFiles.map(f => f.name),
+        processed: true,
+        timestamp: new Date().toISOString()
+      }));
       
       // Wait a moment before redirecting
       setTimeout(() => {
-        // Redirect to project page
-        navigate(`/project/${projectId}`);
+        // Redirect to project page with a query parameter to indicate successful upload
+        navigate(`/project/${projectId}?upload=success`);
       }, 1000);
     } catch (error) {
-      toast({
-        title: "Processing failed",
+      sonnerToast.error("Processing failed", {
         description: "There was an error preprocessing your data. Please try again.",
-        variant: "destructive",
+        id: "processing"
       });
       console.error("Error preprocessing:", error);
     } finally {
