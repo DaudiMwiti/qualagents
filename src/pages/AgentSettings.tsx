@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import PageTransition from "@/components/shared/PageTransition";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -34,6 +34,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import { agentService } from "@/services/agentService";
+import { Plus, Edit, Settings, Brain, PenTool } from "lucide-react";
 
 const methodologies = [
   { value: "grounded-theory", label: "Grounded Theory" },
@@ -177,10 +178,21 @@ const AgentSettings = () => {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h1 className="text-3xl font-semibold">AI Agent Configuration</h1>
-            <p className="text-muted-foreground mt-1">
-              Customize and manage your qualitative research AI agents
-            </p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-semibold">AI Agent Configuration</h1>
+                <p className="text-muted-foreground mt-1">
+                  Customize and manage your qualitative research AI agents
+                </p>
+              </div>
+              <Button
+                onClick={() => navigate("/agent-customization")}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+              >
+                <PenTool className="mr-2 h-4 w-4" />
+                Design Custom Agent
+              </Button>
+            </div>
           </motion.div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
