@@ -2,11 +2,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { Project } from "@/services/projectService";
 import { ExportOptions } from "./ExportOptions";
 import { ProjectInsights } from "@/services/insightsService";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface ProjectHeaderProps {
   project: Project;
@@ -28,25 +28,11 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project, insights 
           </Link>
         </Button>
         <div>
-          <div className="flex items-center">
-            <h1 className="text-2xl md:text-3xl font-semibold mr-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-semibold">
               {project.title} Insights
             </h1>
-            <Badge
-              variant={
-                project.status === "completed"
-                  ? "default"
-                  : project.status === "in-progress"
-                  ? "secondary"
-                  : "outline"
-              }
-            >
-              {project.status === "in-progress"
-                ? "In Progress"
-                : project.status === "completed"
-                ? "Completed"
-                : "Draft"}
-            </Badge>
+            <StatusBadge status={project.status} size="lg" />
           </div>
           <p className="text-muted-foreground mt-1">
             Analysis results and key findings

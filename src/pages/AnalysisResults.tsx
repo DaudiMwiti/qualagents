@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, BarChart, Brain, Loader2, Check, AlertCircle } from "lucide-react";
+import { ArrowLeft, BarChart, Brain, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/shared/PageTransition";
@@ -15,6 +14,7 @@ import Footer from "@/components/layout/Footer";
 import { analysisService, AnalysisStatus, AnalysisResult } from "@/services/analysisService";
 import { InsightsTab } from "@/components/insights/tabs/InsightsTab";
 import { ProjectInsights } from "@/services/insightsService";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 const AnalysisResults = () => {
   const { projectId, batchId } = useParams();
@@ -75,9 +75,18 @@ const AnalysisResults = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>
-              <h1 className="text-2xl md:text-3xl font-semibold">
-                Analysis in Progress
-              </h1>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl md:text-3xl font-semibold">
+                    Analysis in Progress
+                  </h1>
+                  <StatusBadge 
+                    status={status?.status === 'queued' ? 'draft' : 'processing'} 
+                    processing={status?.status === 'processing'}
+                    size="lg"
+                  />
+                </div>
+              </div>
             </div>
             
             <Card className="mb-8">
@@ -142,9 +151,14 @@ const AnalysisResults = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>
-              <h1 className="text-2xl md:text-3xl font-semibold">
-                Analysis Error
-              </h1>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl md:text-3xl font-semibold">
+                    Analysis Error
+                  </h1>
+                  <StatusBadge status="failed" size="lg" />
+                </div>
+              </div>
             </div>
             
             <Card className="mb-8 border-destructive">
@@ -244,17 +258,11 @@ const AnalysisResults = () => {
                 </Link>
               </Button>
               <div>
-                <div className="flex items-center">
-                  <h1 className="text-2xl md:text-3xl font-semibold mr-3">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl md:text-3xl font-semibold">
                     Analysis Results
                   </h1>
-                  <Badge
-                    variant="default"
-                    className="bg-green-500"
-                  >
-                    <Check className="h-3 w-3 mr-1" />
-                    Completed
-                  </Badge>
+                  <StatusBadge status="completed" size="lg" />
                 </div>
               </div>
             </div>

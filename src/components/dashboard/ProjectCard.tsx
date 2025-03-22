@@ -6,8 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Calendar,
-  Clock,
-  Edit,
   FileText,
   MoreHorizontal,
   Trash,
@@ -15,6 +13,7 @@ import {
   Users,
   BarChart,
   ArrowUpRight,
+  Edit,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Project } from "@/services/projectService";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 const ProjectCard = ({
   id,
@@ -46,9 +46,12 @@ const ProjectCard = ({
       <Card className="overflow-hidden h-full flex flex-col">
         <CardContent className="pt-6 flex-1">
           <div className="flex justify-between items-start mb-2">
-            <Link to={`/project/${id}`} className="hover:underline">
-              <h3 className="font-medium line-clamp-1">{title}</h3>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to={`/project/${id}`} className="hover:underline">
+                <h3 className="font-medium line-clamp-1">{title}</h3>
+              </Link>
+              <StatusBadge status={status} size="sm" />
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="-mr-2">
@@ -102,14 +105,6 @@ const ProjectCard = ({
             <div className="flex items-center text-muted-foreground">
               <Calendar className="h-3.5 w-3.5 mr-1.5" />
               {date}
-            </div>
-            <div className="flex items-center text-muted-foreground">
-              <Clock className="h-3.5 w-3.5 mr-1.5" />
-              {status === "in-progress"
-                ? "In Progress"
-                : status === "completed"
-                ? "Completed"
-                : "Draft"}
             </div>
             <div className="flex items-center text-muted-foreground">
               <FileText className="h-3.5 w-3.5 mr-1.5" />

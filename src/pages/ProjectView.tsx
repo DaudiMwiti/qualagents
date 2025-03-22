@@ -30,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Agent } from "@/types/agent";
 import { projectService, Project } from "@/services/projectService";
 import { useToast } from "@/hooks/use-toast";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -142,25 +143,11 @@ const ProjectView = () => {
                   </Link>
                 </Button>
                 <div>
-                  <div className="flex items-center">
-                    <h1 className="text-2xl md:text-3xl font-semibold mr-3">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <h1 className="text-2xl md:text-3xl font-semibold">
                       {project.title}
                     </h1>
-                    <Badge
-                      variant={
-                        project.status === "completed"
-                          ? "default"
-                          : project.status === "in-progress"
-                          ? "secondary"
-                          : "outline"
-                      }
-                    >
-                      {project.status === "in-progress"
-                        ? "In Progress"
-                        : project.status === "completed"
-                        ? "Completed"
-                        : "Draft"}
-                    </Badge>
+                    <StatusBadge status={project.status} size="lg" />
                   </div>
                   <p className="text-muted-foreground mt-1">
                     {project.description}
