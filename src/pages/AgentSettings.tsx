@@ -1,27 +1,19 @@
+
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Edit,
-  FileCog,
-  FolderOpen,
-  LucideBot,
-  MessageSquareWarning,
-  MoreHorizontal,
+import { 
+  Brain, 
+  Edit, 
+  Trash, 
+  Save, 
+  X, 
   Plus,
-  RefreshCw,
-  Save,
   Settings,
-  Terminal,
-  Trash,
-  X,
+  RefreshCw
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import PageTransition from "@/components/shared/PageTransition";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -32,14 +24,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import AgentVisualizer from "@/components/project/AgentVisualizer";
 import { agentService } from "@/services/agentService";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,18 +36,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const AgentSettings = () => {
   const [agents, setAgents] = useState<any[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentDescription, setNewAgentDescription] = useState("");
   const [newAgentModel, setNewAgentModel] = useState("gpt-3.5-turbo");
@@ -80,110 +59,12 @@ const AgentSettings = () => {
   const [isAgentMemoryEnabled, setIsAgentMemoryEnabled] = useState(true);
   const [isAgentGoalsEnabled, setIsAgentGoalsEnabled] = useState(true);
   const [isAgentConstraintsEnabled, setIsAgentConstraintsEnabled] = useState(true);
-  const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
-  const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
-  const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
-  const [isAgentEmotionalIntelligenceEnabled, setIsAgentEmotionalIntelligenceEnabled] = useState(true);
-  const [isAgentEthicalFrameworkEnabled, setIsAgentEthicalFrameworkEnabled] = useState(true);
-  const [isAgentCreativityEnhancementEnabled, setIsAgentCreativityEnhancementEnabled] = useState(true);
-  const [isAgentCriticalThinkingEnhancementEnabled, setIsAgentCriticalThinkingEnhancementEnabled] = useState(true);
-  const [isAgentLearningFromFeedbackEnabled, setIsAgentLearningFromFeedbackEnabled] = useState(true);
-  const [isAgentComplexProblemSolvingEnabled, setIsAgentComplexProblemSolvingEnabled] = useState(true);
-  const [isAgentDecisionMakingEnabled, setIsAgentDecisionMakingEnabled] = useState(true);
-  const [isAgentRiskAssessmentEnabled, setIsAgentRiskAssessmentEnabled] = useState(true);
-  const [isAgentResourceManagementEnabled, setIsAgentResourceManagementEnabled] = useState(true);
-  const [isAgentTimeManagementEnabled, setIsAgentTimeManagementEnabled] = useState(true);
-  const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
-  const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
-  const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
-  const [isAgentTeamworkSkillsEnabled, setIsAgentTeamworkSkillsEnabled] = useState(true);
-  const [isAgentAdaptabilitySkillsEnabled, setIsAgentAdaptabilitySkillsEnabled] = useState(true);
-  const [isAgentStressManagementSkillsEnabled, setIsAgentStressManagementSkillsEnabled] = useState(true);
-  const [isAgentConflictResolutionSkillsEnabled, setIsAgentConflictResolutionSkillsEnabled] = useState(true);
-  const [isAgentCulturalSensitivitySkillsEnabled, setIsAgentCulturalSensitivitySkillsEnabled] = useState(true);
-  const [isAgentEmotionalRegulationSkillsEnabled, setIsAgentEmotionalRegulationSkillsEnabled] = useState(true);
-  const [isAgentEmpathySkillsEnabled, setIsAgentEmpathySkillsEnabled] = useState(true);
-  const [isAgentSocialAwarenessSkillsEnabled, setIsAgentSocialAwarenessSkillsEnabled] = useState(true);
-  const [isAgentSelfAwarenessSkillsEnabled, setIsAgentSelfAwarenessSkillsEnabled] = useState(true);
-  const [isAgentSelfRegulationSkillsEnabled, setIsAgentSelfRegulationSkillsEnabled] = useState(true);
-  const [isAgentMotivationSkillsEnabled, setIsAgentMotivationSkillsEnabled] = useState(true);
-  const [isAgentResilienceSkillsEnabled, setIsAgentResilienceSkillsEnabled] = useState(true);
-  const [isAgentOptimismSkillsEnabled, setIsAgentOptimismSkillsEnabled] = useState(true);
-  const [isAgentCuriositySkillsEnabled, setIsAgentCuriositySkillsEnabled] = useState(true);
-  const [isAgentOpenMindednessSkillsEnabled, setIsAgentOpenMindednessSkillsEnabled] = useState(true);
-  const [isAgentHumilitySkillsEnabled, setIsAgentHumilitySkillsEnabled] = useState(true);
-  const [isAgentGratitudeSkillsEnabled, setIsAgentGratitudeSkillsEnabled] = useState(true);
-  const [isAgentForgivenessSkillsEnabled, setIsAgentForgivenessSkillsEnabled] = useState(true);
-  const [isAgentCompassionSkillsEnabled, setIsAgentCompassionSkillsEnabled] = useState(true);
-  const [isAgentKindnessSkillsEnabled, setIsAgentKindnessSkillsEnabled] = useState(true);
-  const [isAgentGenerositySkillsEnabled, setIsAgentGenerositySkillsEnabled] = useState(true);
-  const [isAgentServiceSkillsEnabled, setIsAgentServiceSkillsEnabled] = useState(true);
-  const [isAgentJusticeSkillsEnabled, setIsAgentJusticeSkillsEnabled] = useState(true);
-  const [isAgentCourageSkillsEnabled, setIsAgentCourageSkillsEnabled] = useState(true);
-  const [isAgentPerseveranceSkillsEnabled, setIsAgentPerseveranceSkillsEnabled] = useState(true);
-  const [isAgentPatienceSkillsEnabled, setIsAgentPatienceSkillsEnabled] = useState(true);
-  const [isAgentHonestySkillsEnabled, setIsAgentHonestySkillsEnabled] = useState(true);
-  const [isAgentIntegritySkillsEnabled, setIsAgentIntegritySkillsEnabled] = useState(true);
-  const [isAgentResponsibilitySkillsEnabled, setIsAgentResponsibilitySkillsEnabled] = useState(true);
-  const [isAgentAccountabilitySkillsEnabled, setIsAgentAccountabilitySkillsEnabled] = useState(true);
-  const [isAgentLoyaltySkillsEnabled, setIsAgentLoyaltySkillsEnabled] = useState(true);
-  const [isAgentRespectSkillsEnabled, setIsAgentRespectSkillsEnabled] = useState(true);
-  const [isAgentToleranceSkillsEnabled, setIsAgentToleranceSkillsEnabled] = useState(true);
-  const [isAgentAcceptanceSkillsEnabled, setIsAgentAcceptanceSkillsEnabled] = useState(true);
-  const [isAgentInclusivitySkillsEnabled, setIsAgentInclusivitySkillsEnabled] = useState(true);
-  const [isAgentDiversitySkillsEnabled, setIsAgentDiversitySkillsEnabled] = useState(true);
-  const [isAgentEquitySkillsEnabled, setIsAgentEquitySkillsEnabled] = useState(true);
-  const [isAgentBelongingSkillsEnabled, setIsAgentBelongingSkillsEnabled] = useState(true);
-  const [isAgentWellbeingSkillsEnabled, setIsAgentWellbeingSkillsEnabled] = useState(true);
-  const [isAgentHappinessSkillsEnabled, setIsAgentHappinessSkillsEnabled] = useState(true);
-  const [isAgentFulfillmentSkillsEnabled, setIsAgentFulfillmentSkillsEnabled] = useState(true);
-  const [isAgentMeaningSkillsEnabled, setIsAgentMeaningSkillsEnabled] = useState(true);
-  const [isAgentPurposeSkillsEnabled, setIsAgentPurposeSkillsEnabled] = useState(true);
-  const [isAgentLegacySkillsEnabled, setIsAgentLegacySkillsEnabled] = useState(true);
-  const [isAgentImpactSkillsEnabled, setIsAgentImpactSkillsEnabled] = useState(true);
-  const [isAgentTransformationSkillsEnabled, setIsAgentTransformationSkillsEnabled] = useState(true);
-  const [isAgentGrowthSkillsEnabled, setIsAgentGrowthSkillsEnabled] = useState(true);
-  const [isAgentLearningSkillsEnabled, setIsAgentLearningSkillsEnabled] = useState(true);
-  const [isAgentDevelopmentSkillsEnabled, setIsAgentDevelopmentSkillsEnabled] = useState(true);
-  const [isAgentImprovementSkillsEnabled, setIsAgentImprovementSkillsEnabled] = useState(true);
-  const [isAgentProgressSkillsEnabled, setIsAgentProgressSkillsEnabled] = useState(true);
-  const [isAgentSuccessSkillsEnabled, setIsAgentSuccessSkillsEnabled] = useState(true);
-  const [isAgentAchievementSkillsEnabled, setIsAgentAchievementSkillsEnabled] = useState(true);
-  const [isAgentRecognitionSkillsEnabled, setIsAgentRecognitionSkillsEnabled] = useState(true);
-  const [isAgentAppreciationSkillsEnabled, setIsAgentAppreciationSkillsEnabled] = useState(true);
-  const [isAgentCelebrationSkillsEnabled, setIsAgentCelebrationSkillsEnabled] = useState(true);
-  const [isAgentJoySkillsEnabled, setIsAgentJoySkillsEnabled] = useState(true);
-  const [isAgentPeaceSkillsEnabled, setIsAgentPeaceSkillsEnabled] = useState(true);
-  const [isAgentLoveSkillsEnabled, setIsAgentLoveSkillsEnabled] = useState(true);
-  const [isAgentHopeSkillsEnabled, setIsAgentHopeSkillsEnabled] = useState(true);
-  const [isAgentFaithSkillsEnabled, setIsAgentFaithSkillsEnabled] = useState(true);
-  const [isAgentCharitySkillsEnabled, setIsAgentCharitySkillsEnabled] = useState(true);
-  const [isAgentVirtueSkillsEnabled, setIsAgentVirtueSkillsEnabled] = useState(true);
-  const [isAgentGoodnessSkillsEnabled, setIsAgentGoodnessSkillsEnabled] = useState(true);
-  const [isAgentTruthSkillsEnabled, setIsAgentTruthSkillsEnabled] = useState(true);
-  const [isAgentBeautySkillsEnabled, setIsAgentBeautySkillsEnabled] = useState(true);
-  const [isAgentWisdomSkillsEnabled, setIsAgentWisdomSkillsEnabled] = useState(true);
-  const [isAgentKnowledgeSkillsEnabled, setIsAgentKnowledgeSkillsEnabled] = useState(true);
-  const [isAgentUnderstandingSkillsEnabled, setIsAgentUnderstandingSkillsEnabled] = useState(true);
-  const [isAgentInsightSkillsEnabled, setIsAgentInsightSkillsEnabled] = useState(true);
-  const [isAgentIntuitionSkillsEnabled, setIsAgentIntuitionSkillsEnabled] = useState(true);
-  const [isAgentImaginationSkillsEnabled, setIsAgentImaginationSkillsEnabled] = useState(true);
-  const [isAgentCreativitySkillsEnabled, setIsAgentCreativitySkillsEnabled] = useState(true);
-  const [isAgentInnovationSkillsEnabled, setIsAgentInnovationSkillsEnabled] = useState(true);
-  const [isAgentOriginalitySkillsEnabled, setIsAgentOriginalitySkillsEnabled] = useState(true);
-  const [isAgentVisionSkillsEnabled, setIsAgentVisionSkillsEnabled] = useState(true);
-  const [isAgentStrategySkillsEnabled, setIsAgentStrategySkillsEnabled] = useState(true);
-  const [isAgentPlanningSkillsEnabled, setIsAgentPlanningSkillsEnabled] = useState(true);
-  const [isAgentOrganizationSkillsEnabled, setIsAgentOrganizationSkillsEnabled] = useState(true);
-  const [isAgentExecutionSkillsEnabled, setIsAgentExecutionSkillsEnabled] = useState(true);
-  const [isAgentMonitoringSkillsEnabled, setIsAgentMonitoringSkillsEnabled] = useState(true);
-  const [isAgentEvaluationSkillsEnabled, setIsAgentEvaluationSkillsEnabled] = useState(true);
-  const [isAgentAdaptationSkillsEnabled, setIsAgentAdaptationSkillsEnabled] = useState(true);
   const supabase = useSupabaseClient();
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
+        setIsLoading(true);
         const fetchedAgents = await agentService.getAgents(supabase);
         setAgents(fetchedAgents);
       } catch (error) {
@@ -193,6 +74,8 @@ const AgentSettings = () => {
           description: "Failed to load the list of AI Agents.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -219,105 +102,6 @@ const AgentSettings = () => {
     setIsAgentMemoryEnabled(agent.is_memory_enabled);
     setIsAgentGoalsEnabled(agent.is_goals_enabled);
     setIsAgentConstraintsEnabled(agent.is_constraints_enabled);
-    setIsAgentSelfImprovementEnabled(agent.is_self_improvement_enabled);
-    setIsAgentLongTermPlanningEnabled(agent.is_long_term_planning_enabled);
-    setIsAgentMultiAgentCollaborationEnabled(agent.is_multi_agent_collaboration_enabled);
-    setIsAgentEmotionalIntelligenceEnabled(agent.is_emotional_intelligence_enabled);
-    setIsAgentEthicalFrameworkEnabled(agent.is_ethical_framework_enabled);
-    setIsAgentCreativityEnhancementEnabled(agent.is_creativity_enhancement_enabled);
-    setIsAgentCriticalThinkingEnhancementEnabled(agent.is_critical_thinking_enhancement_enabled);
-    setIsAgentLearningFromFeedbackEnabled(agent.is_learning_from_feedback_enabled);
-    setIsAgentComplexProblemSolvingEnabled(agent.is_complex_problem_solving_enabled);
-    setIsAgentDecisionMakingEnabled(agent.is_decision_making_enabled);
-    setIsAgentRiskAssessmentEnabled(agent.is_risk_assessment_enabled);
-    setIsAgentResourceManagementEnabled(agent.is_resource_management_enabled);
-    setIsAgentTimeManagementEnabled(agent.is_time_management_enabled);
-    setIsAgentCommunicationSkillsEnabled(agent.is_communication_skills_enabled);
-    setIsAgentNegotiationSkillsEnabled(agent.is_negotiation_skills_enabled);
-    setIsAgentLeadershipSkillsEnabled(agent.is_leadership_skills_enabled);
-    setIsAgentTeamworkSkillsEnabled(agent.is_teamwork_skills_enabled);
-    setIsAgentAdaptabilitySkillsEnabled(agent.is_adaptability_skills_enabled);
-    setIsAgentStressManagementSkillsEnabled(agent.is_stress_management_skills_enabled);
-    setIsAgentConflictResolutionSkillsEnabled(agent.is_conflict_resolution_skills_enabled);
-    setIsAgentCulturalSensitivitySkillsEnabled(agent.is_cultural_sensitivity_skills_enabled);
-    setIsAgentEmotionalRegulationSkillsEnabled(agent.is_emotional_regulation_skills_enabled);
-    setIsAgentEmpathySkillsEnabled(agent.is_empathy_skills_enabled);
-    setIsAgentSocialAwarenessSkillsEnabled(agent.is_social_awareness_skills_enabled);
-    setIsAgentSelfAwarenessSkillsEnabled(agent.is_self_awareness_skills_enabled);
-    setIsAgentSelfRegulationSkillsEnabled(agent.is_self_regulation_skills_enabled);
-    setIsAgentMotivationSkillsEnabled(agent.is_motivation_skills_enabled);
-    setIsAgentResilienceSkillsEnabled(agent.is_resilience_skills_enabled);
-    setIsAgentOptimismSkillsEnabled(agent.is_optimism_skills_enabled);
-    setIsAgentCuriositySkillsEnabled(agent.is_curiosity_skills_enabled);
-    setIsAgentOpenMindednessSkillsEnabled(agent.is_open_mindedness_skills_enabled);
-    setIsAgentHumilitySkillsEnabled(agent.is_humility_skills_enabled);
-    setIsAgentGratitudeSkillsEnabled(agent.is_gratitude_skills_enabled);
-    setIsAgentForgivenessSkillsEnabled(agent.is_forgiveness_skills_enabled);
-    setIsAgentCompassionSkillsEnabled(agent.is_compassion_skills_enabled);
-    setIsAgentKindnessSkillsEnabled(agent.is_kindness_skills_enabled);
-    setIsAgentGenerositySkillsEnabled(agent.is_generosity_skills_enabled);
-    setIsAgentServiceSkillsEnabled(agent.is_service_skills_enabled);
-    setIsAgentJusticeSkillsEnabled(agent.is_justice_skills_enabled);
-    setIsAgentCourageSkillsEnabled(agent.is_courage_skills_enabled);
-    setIsAgentPerseveranceSkillsEnabled(agent.is_perseverance_skills_enabled);
-    setIsAgentPatienceSkillsEnabled(agent.is_patience_skills_enabled);
-    setIsAgentHonestySkillsEnabled(agent.is_honesty_skills_enabled);
-    setIsAgentIntegritySkillsEnabled(agent.is_integrity_skills_enabled);
-    setIsAgentResponsibilitySkillsEnabled(agent.is_responsibility_skills_enabled);
-    setIsAgentAccountabilitySkillsEnabled(agent.is_accountability_skills_enabled);
-    setIsAgentLoyaltySkillsEnabled(agent.is_loyalty_skills_enabled);
-    setIsAgentRespectSkillsEnabled(agent.is_respect_skills_enabled);
-    setIsAgentToleranceSkillsEnabled(agent.is_tolerance_skills_enabled);
-    setIsAgentAcceptanceSkillsEnabled(agent.is_acceptance_skills_enabled);
-    setIsAgentInclusivitySkillsEnabled(agent.is_inclusivity_skills_enabled);
-    setIsAgentDiversitySkillsEnabled(agent.is_diversity_skills_enabled);
-    setIsAgentEquitySkillsEnabled(agent.is_equity_skills_enabled);
-    setIsAgentBelongingSkillsEnabled(agent.is_belonging_skills_enabled);
-    setIsAgentWellbeingSkillsEnabled(agent.is_wellbeing_skills_enabled);
-    setIsAgentHappinessSkillsEnabled(agent.is_happiness_skills_enabled);
-    setIsAgentFulfillmentSkillsEnabled(agent.is_fulfillment_skills_enabled);
-    setIsAgentMeaningSkillsEnabled(agent.is_meaning_skills_enabled);
-    setIsAgentPurposeSkillsEnabled(agent.is_purpose_skills_enabled);
-    setIsAgentLegacySkillsEnabled(agent.is_legacy_skills_enabled);
-    setIsAgentImpactSkillsEnabled(agent.is_impact_skills_enabled);
-    setIsAgentTransformationSkillsEnabled(agent.is_transformation_skills_enabled);
-    setIsAgentGrowthSkillsEnabled(agent.is_growth_skills_enabled);
-    setIsAgentLearningSkillsEnabled(agent.is_learning_skills_enabled);
-    setIsAgentDevelopmentSkillsEnabled(agent.is_development_skills_enabled);
-    setIsAgentImprovementSkillsEnabled(agent.is_improvement_skills_enabled);
-    setIsAgentProgressSkillsEnabled(agent.is_progress_skills_enabled);
-    setIsAgentSuccessSkillsEnabled(agent.is_success_skills_enabled);
-    setIsAgentAchievementSkillsEnabled(agent.is_achievement_skills_enabled);
-    setIsAgentRecognitionSkillsEnabled(agent.is_recognition_skills_enabled);
-    setIsAgentAppreciationSkillsEnabled(agent.is_appreciation_skills_enabled);
-    setIsAgentCelebrationSkillsEnabled(agent.is_celebration_skills_enabled);
-    setIsAgentJoySkillsEnabled(agent.is_joy_skills_enabled);
-    setIsAgentPeaceSkillsEnabled(agent.is_peace_skills_enabled);
-    setIsAgentLoveSkillsEnabled(agent.is_love_skills_enabled);
-    setIsAgentHopeSkillsEnabled(agent.is_hope_skills_enabled);
-    setIsAgentFaithSkillsEnabled(agent.is_faith_skills_enabled);
-    setIsAgentCharitySkillsEnabled(agent.is_charity_skills_enabled);
-    setIsAgentVirtueSkillsEnabled(agent.is_virtue_skills_enabled);
-    setIsAgentGoodnessSkillsEnabled(agent.is_goodness_skills_enabled);
-    setIsAgentTruthSkillsEnabled(agent.is_truth_skills_enabled);
-    setIsAgentBeautySkillsEnabled(agent.is_beauty_skills_enabled);
-    setIsAgentWisdomSkillsEnabled(agent.is_wisdom_skills_enabled);
-    setIsAgentKnowledgeSkillsEnabled(agent.is_knowledge_skills_enabled);
-    setIsAgentUnderstandingSkillsEnabled(agent.is_understanding_skills_enabled);
-    setIsAgentInsightSkillsEnabled(agent.is_insight_skills_enabled);
-    setIsAgentIntuitionSkillsEnabled(agent.is_intuition_skills_enabled);
-    setIsAgentImaginationSkillsEnabled(agent.is_imagination_skills_enabled);
-    setIsAgentCreativitySkillsEnabled(agent.is_creativity_skills_enabled);
-    setIsAgentInnovationSkillsEnabled(agent.is_innovation_skills_enabled);
-    setIsAgentOriginalitySkillsEnabled(agent.is_originality_skills_enabled);
-    setIsAgentVisionSkillsEnabled(agent.is_vision_skills_enabled);
-    setIsAgentStrategySkillsEnabled(agent.is_strategy_skills_enabled);
-    setIsAgentPlanningSkillsEnabled(agent.is_planning_skills_enabled);
-    setIsAgentOrganizationSkillsEnabled(agent.is_organization_skills_enabled);
-    setIsAgentExecutionSkillsEnabled(agent.is_execution_skills_enabled);
-    setIsAgentMonitoringSkillsEnabled(agent.is_monitoring_skills_enabled);
-    setIsAgentEvaluationSkillsEnabled(agent.is_evaluation_skills_enabled);
-    setIsAgentAdaptationSkillsEnabled(agent.is_adaptation_skills_enabled);
   };
 
   const handleEditClick = () => {
@@ -344,56 +128,573 @@ const AgentSettings = () => {
       setIsAgentMemoryEnabled(selectedAgent.is_memory_enabled);
       setIsAgentGoalsEnabled(selectedAgent.is_goals_enabled);
       setIsAgentConstraintsEnabled(selectedAgent.is_constraints_enabled);
-      setIsAgentSelfImprovementEnabled(selectedAgent.is_self_improvement_enabled);
-      setIsAgentLongTermPlanningEnabled(selectedAgent.is_long_term_planning_enabled);
-      setIsAgentMultiAgentCollaborationEnabled(selectedAgent.is_multi_agent_collaboration_enabled);
-      setIsAgentEmotionalIntelligenceEnabled(selectedAgent.is_emotional_intelligence_enabled);
-      setIsAgentEthicalFrameworkEnabled(selectedAgent.is_ethical_framework_enabled);
-      setIsAgentCreativityEnhancementEnabled(selectedAgent.is_creativity_enhancement_enabled);
-      setIsAgentCriticalThinkingEnhancementEnabled(selectedAgent.is_critical_thinking_enhancement_enabled);
-      setIsAgentLearningFromFeedbackEnabled(selectedAgent.is_learning_from_feedback_enabled);
-      setIsAgentComplexProblemSolvingEnabled(selectedAgent.is_complex_problem_solving_enabled);
-      setIsAgentDecisionMakingEnabled(selectedAgent.is_decision_making_enabled);
-      setIsAgentRiskAssessmentEnabled(selectedAgent.is_risk_assessment_enabled);
-      setIsAgentResourceManagementEnabled(selectedAgent.is_resource_management_enabled);
-      setIsAgentTimeManagementEnabled(selectedAgent.is_time_management_enabled);
-      setIsAgentCommunicationSkillsEnabled(selectedAgent.is_communication_skills_enabled);
-      setIsAgentNegotiationSkillsEnabled(selectedAgent.is_negotiation_skills_enabled);
-      setIsAgentLeadershipSkillsEnabled(selectedAgent.is_leadership_skills_enabled);
-      setIsAgentTeamworkSkillsEnabled(selectedAgent.is_teamwork_skills_enabled);
-      setIsAgentAdaptabilitySkillsEnabled(selectedAgent.is_adaptability_skills_enabled);
-      setIsAgentStressManagementSkillsEnabled(selectedAgent.is_stress_management_skills_enabled);
-      setIsAgentConflictResolutionSkillsEnabled(selectedAgent.is_conflict_resolution_skills_enabled);
-      setIsAgentCulturalSensitivitySkillsEnabled(selectedAgent.is_cultural_sensitivity_skills_enabled);
-      setIsAgentEmotionalRegulationSkillsEnabled(selectedAgent.is_emotional_regulation_skills_enabled);
-      setIsAgentEmpathySkillsEnabled(selectedAgent.is_empathy_skills_enabled);
-      setIsAgentSocialAwarenessSkillsEnabled(selectedAgent.is_social_awareness_skills_enabled);
-      setIsAgentSelfAwarenessSkillsEnabled(selectedAgent.is_self_awareness_skills_enabled);
-      setIsAgentSelfRegulationSkillsEnabled(selectedAgent.is_self_regulation_skills_enabled);
-      setIsAgentMotivationSkillsEnabled(selectedAgent.is_motivation_skills_enabled);
-      setIsAgentResilienceSkillsEnabled(selectedAgent.is_resilience_skills_enabled);
-      setIsAgentOptimismSkillsEnabled(selectedAgent.is_optimism_skills_enabled);
-      setIsAgentCuriositySkillsEnabled(selectedAgent.is_curiosity_skills_enabled);
-      setIsAgentOpenMindednessSkillsEnabled(selectedAgent.is_open_mindedness_skills_enabled);
-      setIsAgentHumilitySkillsEnabled(selectedAgent.is_humility_skills_enabled);
-      setIsAgentGratitudeSkillsEnabled(selectedAgent.is_gratitude_skills_enabled);
-      setIsAgentForgivenessSkillsEnabled(selectedAgent.is_forgiveness_skills_enabled);
-      setIsAgentCompassionSkillsEnabled(selectedAgent.is_compassion_skills_enabled);
-      setIsAgentKindnessSkillsEnabled(selectedAgent.is_kindness_skills_enabled);
-      setIsAgentGenerositySkillsEnabled(selectedAgent.is_generosity_skills_enabled);
-      setIsAgentServiceSkillsEnabled(selectedAgent.is_service_skills_enabled);
-      setIsAgentJusticeSkillsEnabled(selectedAgent.is_justice_skills_enabled);
-      setIsAgentCourageSkillsEnabled(selectedAgent.is_courage_skills_enabled);
-      setIsAgentPerseveranceSkillsEnabled(selectedAgent.is_perseverance_skills_enabled);
-      setIsAgentPatienceSkillsEnabled(selectedAgent.is_patience_skills_enabled);
-      setIsAgentHonestySkillsEnabled(selectedAgent.is_honesty_skills_enabled);
-      setIsAgentIntegritySkillsEnabled(selectedAgent.is_integrity_skills_enabled);
-      setIsAgentResponsibilitySkillsEnabled(selectedAgent.is_responsibility_skills_enabled);
-      setIsAgentAccountabilitySkillsEnabled(selectedAgent.is_accountability_skills_enabled);
-      setIsAgentLoyaltySkillsEnabled(selectedAgent.is_loyalty_skills_enabled);
-      setIsAgentRespectSkillsEnabled(selectedAgent.is_respect_skills_enabled);
-      setIsAgentToleranceSkillsEnabled(selectedAgent.is_tolerance_skills_enabled);
-      setIsAgentAcceptanceSkillsEnabled(selectedAgent.is_acceptance_skills_enabled);
-      setIsAgentInclusivitySkillsEnabled(selectedAgent.is_inclusivity_skills_enabled);
-      setIsAgentDiversitySkillsEnabled(selectedAgent.is_diversity_skills_enabled);
-      setIsAgentEquitySkillsEnabled(selectedAgent.is_equ
+    }
+  };
+
+  const handleSaveClick = async () => {
+    if (!selectedAgent) return;
+    
+    try {
+      setIsLoading(true);
+      const updatedAgent = {
+        ...selectedAgent,
+        name: newAgentName,
+        description: newAgentDescription,
+        model: newAgentModel,
+        temperature: newAgentTemperature,
+        max_tokens: newAgentMaxTokens,
+        prompt: newAgentPrompt,
+        is_active: isAgentActive,
+        is_public: isAgentPublic,
+        is_safe_mode: isAgentSafeMode,
+        is_streaming: isAgentStreaming,
+        is_context_aware: isAgentContextAware,
+        is_knowledge_enabled: isAgentKnowledgeEnabled,
+        is_tools_enabled: isAgentToolsEnabled,
+        is_reasoning_enabled: isAgentReasoningEnabled,
+        is_memory_enabled: isAgentMemoryEnabled,
+        is_goals_enabled: isAgentGoalsEnabled,
+        is_constraints_enabled: isAgentConstraintsEnabled,
+      };
+      
+      await agentService.updateAgent(supabase, updatedAgent);
+      
+      setAgents(agents.map(agent => 
+        agent.id === selectedAgent.id ? updatedAgent : agent
+      ));
+      
+      setSelectedAgent(updatedAgent);
+      setIsEditing(false);
+      
+      toast({
+        title: "Agent updated",
+        description: "The AI agent has been successfully updated.",
+      });
+    } catch (error) {
+      console.error("Error updating agent:", error);
+      toast({
+        title: "Error updating agent",
+        description: "Failed to update the AI agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateClick = async () => {
+    try {
+      setIsLoading(true);
+      const newAgent = {
+        name: "New Agent",
+        description: "A new AI agent",
+        model: "gpt-3.5-turbo",
+        temperature: 0.7,
+        max_tokens: 200,
+        prompt: "",
+        is_active: true,
+        is_public: false,
+        is_safe_mode: true,
+        is_streaming: false,
+        is_context_aware: true,
+        is_knowledge_enabled: true,
+        is_tools_enabled: true,
+        is_reasoning_enabled: true,
+        is_memory_enabled: true,
+        is_goals_enabled: true,
+        is_constraints_enabled: true,
+      };
+      
+      const createdAgent = await agentService.createAgent(supabase, newAgent);
+      
+      setAgents([...agents, createdAgent]);
+      handleAgentSelect(createdAgent);
+      setIsEditing(true);
+      
+      toast({
+        title: "Agent created",
+        description: "A new AI agent has been created. You can now customize it.",
+      });
+    } catch (error) {
+      console.error("Error creating agent:", error);
+      toast({
+        title: "Error creating agent",
+        description: "Failed to create a new AI agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteClick = async () => {
+    if (!selectedAgent) return;
+    
+    try {
+      setIsLoading(true);
+      await agentService.deleteAgent(supabase, selectedAgent.id);
+      
+      setAgents(agents.filter(agent => agent.id !== selectedAgent.id));
+      setSelectedAgent(null);
+      
+      toast({
+        title: "Agent deleted",
+        description: "The AI agent has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting agent:", error);
+      toast({
+        title: "Error deleting agent",
+        description: "Failed to delete the AI agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <PageTransition>
+      <Navbar />
+      
+      <main className="pt-24 min-h-screen">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.42, 0, 0.58, 1] }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h1 className="text-3xl font-semibold mb-2">AI Agent Settings</h1>
+                <p className="text-muted-foreground">
+                  Configure your AI agents and their capabilities
+                </p>
+              </div>
+              <Button onClick={handleCreateClick} disabled={isLoading}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Agent
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
+              <div className="glass-card p-6">
+                <h2 className="text-xl font-medium mb-4">Available Agents</h2>
+                {isLoading && !agents.length ? (
+                  <div className="flex justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {agents.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        No agents found. Create your first agent to get started.
+                      </p>
+                    ) : (
+                      agents.map(agent => (
+                        <div
+                          key={agent.id}
+                          className={`p-3 rounded-md cursor-pointer flex items-center justify-between ${
+                            selectedAgent?.id === agent.id
+                              ? "bg-primary/10 border border-primary/30"
+                              : "hover:bg-secondary/50"
+                          }`}
+                          onClick={() => handleAgentSelect(agent)}
+                        >
+                          <div className="flex items-center">
+                            <Brain className="h-5 w-5 mr-3 text-primary" />
+                            <div>
+                              <p className="font-medium">{agent.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {agent.model}
+                              </p>
+                            </div>
+                          </div>
+                          {agent.is_active ? (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-200">
+                              Inactive
+                            </Badge>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {selectedAgent ? (
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-2xl">
+                      {isEditing ? "Edit Agent" : selectedAgent.name}
+                    </CardTitle>
+                    <div className="flex space-x-2">
+                      {isEditing ? (
+                        <>
+                          <Button variant="outline" onClick={handleCancelClick} disabled={isLoading}>
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </Button>
+                          <Button onClick={handleSaveClick} disabled={isLoading}>
+                            {isLoading ? (
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4 mr-2" />
+                            )}
+                            Save
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" className="text-destructive hover:bg-destructive/10" disabled={isLoading}>
+                                <Trash className="h-4 w-4 mr-2" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete AI Agent</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this AI agent? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={handleDeleteClick} 
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          <Button onClick={handleEditClick} disabled={isLoading}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    {isLoading && isEditing ? (
+                      <div className="flex justify-center py-8">
+                        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Name</Label>
+                            {isEditing ? (
+                              <Input
+                                id="name"
+                                value={newAgentName}
+                                onChange={(e) => setNewAgentName(e.target.value)}
+                                placeholder="Enter agent name"
+                              />
+                            ) : (
+                              <p className="text-lg">{selectedAgent.name}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="description">Description</Label>
+                            {isEditing ? (
+                              <Textarea
+                                id="description"
+                                value={newAgentDescription}
+                                onChange={(e) => setNewAgentDescription(e.target.value)}
+                                placeholder="Enter agent description"
+                                rows={3}
+                              />
+                            ) : (
+                              <p className="text-muted-foreground">
+                                {selectedAgent.description || "No description provided."}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="model">Model</Label>
+                            {isEditing ? (
+                              <Input
+                                id="model"
+                                value={newAgentModel}
+                                onChange={(e) => setNewAgentModel(e.target.value)}
+                                placeholder="e.g., gpt-3.5-turbo"
+                              />
+                            ) : (
+                              <p>{selectedAgent.model}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <Label htmlFor="temperature">Temperature: {isEditing ? newAgentTemperature : selectedAgent.temperature}</Label>
+                            </div>
+                            {isEditing ? (
+                              <Slider
+                                id="temperature"
+                                value={[newAgentTemperature]}
+                                min={0}
+                                max={1}
+                                step={0.1}
+                                onValueChange={(vals) => setNewAgentTemperature(vals[0])}
+                              />
+                            ) : (
+                              <div className="h-5 bg-secondary/50 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary rounded-full"
+                                  style={{ width: `${selectedAgent.temperature * 100}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="maxTokens">Max Tokens</Label>
+                            {isEditing ? (
+                              <Input
+                                id="maxTokens"
+                                type="number"
+                                value={newAgentMaxTokens}
+                                onChange={(e) => setNewAgentMaxTokens(parseInt(e.target.value))}
+                                placeholder="e.g., 2000"
+                              />
+                            ) : (
+                              <p>{selectedAgent.max_tokens}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="prompt">System Prompt</Label>
+                          {isEditing ? (
+                            <Textarea
+                              id="prompt"
+                              value={newAgentPrompt}
+                              onChange={(e) => setNewAgentPrompt(e.target.value)}
+                              placeholder="Enter system prompt for the agent"
+                              rows={5}
+                            />
+                          ) : (
+                            <p className="p-3 bg-secondary/30 rounded-md text-sm font-mono whitespace-pre-wrap">
+                              {selectedAgent.prompt || "No system prompt provided."}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium">Agent Settings</h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="active" className="cursor-pointer">Active</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="active"
+                                  checked={isAgentActive}
+                                  onCheckedChange={setIsAgentActive}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_active ? "default" : "outline"}>
+                                  {selectedAgent.is_active ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="public" className="cursor-pointer">Public</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="public"
+                                  checked={isAgentPublic}
+                                  onCheckedChange={setIsAgentPublic}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_public ? "default" : "outline"}>
+                                  {selectedAgent.is_public ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="safeMode" className="cursor-pointer">Safe Mode</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="safeMode"
+                                  checked={isAgentSafeMode}
+                                  onCheckedChange={setIsAgentSafeMode}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_safe_mode ? "default" : "outline"}>
+                                  {selectedAgent.is_safe_mode ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="streaming" className="cursor-pointer">Streaming</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="streaming"
+                                  checked={isAgentStreaming}
+                                  onCheckedChange={setIsAgentStreaming}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_streaming ? "default" : "outline"}>
+                                  {selectedAgent.is_streaming ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="contextAware" className="cursor-pointer">Context Aware</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="contextAware"
+                                  checked={isAgentContextAware}
+                                  onCheckedChange={setIsAgentContextAware}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_context_aware ? "default" : "outline"}>
+                                  {selectedAgent.is_context_aware ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="knowledgeEnabled" className="cursor-pointer">Knowledge Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="knowledgeEnabled"
+                                  checked={isAgentKnowledgeEnabled}
+                                  onCheckedChange={setIsAgentKnowledgeEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_knowledge_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_knowledge_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="toolsEnabled" className="cursor-pointer">Tools Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="toolsEnabled"
+                                  checked={isAgentToolsEnabled}
+                                  onCheckedChange={setIsAgentToolsEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_tools_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_tools_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="reasoningEnabled" className="cursor-pointer">Reasoning Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="reasoningEnabled"
+                                  checked={isAgentReasoningEnabled}
+                                  onCheckedChange={setIsAgentReasoningEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_reasoning_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_reasoning_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="memoryEnabled" className="cursor-pointer">Memory Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="memoryEnabled"
+                                  checked={isAgentMemoryEnabled}
+                                  onCheckedChange={setIsAgentMemoryEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_memory_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_memory_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="goalsEnabled" className="cursor-pointer">Goals Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="goalsEnabled"
+                                  checked={isAgentGoalsEnabled}
+                                  onCheckedChange={setIsAgentGoalsEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_goals_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_goals_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between space-x-2">
+                              <Label htmlFor="constraintsEnabled" className="cursor-pointer">Constraints Enabled</Label>
+                              {isEditing ? (
+                                <Switch
+                                  id="constraintsEnabled"
+                                  checked={isAgentConstraintsEnabled}
+                                  onCheckedChange={setIsAgentConstraintsEnabled}
+                                />
+                              ) : (
+                                <Badge variant={selectedAgent.is_constraints_enabled ? "default" : "outline"}>
+                                  {selectedAgent.is_constraints_enabled ? "Yes" : "No"}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center min-h-[300px] text-center p-12">
+                    <Settings className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-medium mb-2">No Agent Selected</h3>
+                    <p className="text-muted-foreground max-w-md mb-6">
+                      Select an agent from the list to view or edit its settings, or create a new agent to get started.
+                    </p>
+                    <Button onClick={handleCreateClick} disabled={isLoading}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Agent
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </main>
+    </PageTransition>
+  );
+};
+
+export default AgentSettings;
