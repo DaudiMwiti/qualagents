@@ -132,6 +132,27 @@ CREATE TABLE public.insight_feedback (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create profiles table for user preferences and settings
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT,
+  avatar_url TEXT,
+  preferences JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create exports table for tracking exported reports
+CREATE TABLE public.exports (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  format TEXT, -- e.g. 'pdf', 'csv', 'markdown', 'json'
+  status TEXT DEFAULT 'completed', -- 'pending', 'processing', 'completed', 'failed'
+  download_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable RLS on all tables
 ALTER TABLE public.agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_personas ENABLE ROW LEVEL SECURITY;
@@ -144,8 +165,10 @@ ALTER TABLE public.agent_batches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_interactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_collaborations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.insight_feedback ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exports ENABLE ROW LEVEL SECURITY;
 
--- Create basic policies (you'll want to refine these based on your app's security needs)
+-- Create basic read policies
 CREATE POLICY "Users can read all agents" ON public.agents
   FOR SELECT USING (true);
 
@@ -158,7 +181,7 @@ CREATE POLICY "Users can read all projects" ON public.projects
 CREATE POLICY "Project collaborators can read project data" ON public.project_collaborators
   FOR SELECT USING (true);
 
--- Example of more restricted policy
+-- Expanded RLS policies for write access
 CREATE POLICY "Project collaborators can read project documents" ON public.documents
   FOR SELECT USING (
     EXISTS (
@@ -166,6 +189,75 @@ CREATE POLICY "Project collaborators can read project documents" ON public.docum
       WHERE pc.project_id = documents.project_id AND pc.user_id = auth.uid()
     )
   );
+
+-- Write policies for projects
+CREATE POLICY "Users can insert their own projects" ON public.projects
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update projects they collaborate on" ON public.projects
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.project_collaborators pc
+      WHERE pc.project_id = projects.id AND pc.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can delete projects they collaborate on" ON public.projects
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.project_collaborators pc
+      WHERE pc.project_id = projects.id AND pc.user_id = auth.uid()
+    )
+  );
+
+-- Write policies for documents
+CREATE POLICY "Users can insert documents to their projects" ON public.documents
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.project_collaborators pc
+      WHERE pc.project_id = documents.project_id AND pc.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can update documents in their projects" ON public.documents
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.project_collaborators pc
+      WHERE pc.project_id = documents.project_id AND pc.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can delete documents in their projects" ON public.documents
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.project_collaborators pc
+      WHERE pc.project_id = documents.project_id AND pc.user_id = auth.uid()
+    )
+  );
+
+-- Policies for insight feedback
+CREATE POLICY "Users can insert their own feedback" ON public.insight_feedback
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update their own feedback" ON public.insight_feedback
+  FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- Policies for profiles
+CREATE POLICY "Users can access their own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile" ON public.profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Policies for exports
+CREATE POLICY "Users can view their own exports" ON public.exports
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own exports" ON public.exports
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Insert some initial data for agent personas - using UUID generation
 INSERT INTO public.agent_personas (name, description, traits)
@@ -205,3 +297,22 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_agent_batches_modtime
 BEFORE UPDATE ON public.agent_batches
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_profiles_modtime
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- Function to automatically create a profile for new users
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, avatar_url, preferences)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'avatar_url', '{}');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function whenever a user is created
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
