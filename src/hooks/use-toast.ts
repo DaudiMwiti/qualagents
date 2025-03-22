@@ -81,6 +81,20 @@ export const useToast = () => {
         variant: "success",
       });
     },
+    info: (message: string) => {
+      toast({
+        title: "Info",
+        description: message,
+        variant: "info",
+      });
+    },
+    warning: (message: string) => {
+      toast({
+        title: "Warning", 
+        description: message,
+        variant: "warning",
+      });
+    },
   };
 };
 
