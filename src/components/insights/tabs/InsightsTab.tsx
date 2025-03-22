@@ -1,7 +1,8 @@
 
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button, Badge } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Filter, Brain, CalendarDays, Star, ThumbsUp, MessageSquare } from "lucide-react";
 import { ProjectInsights } from "@/services/insightsService";
 
