@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { analysisService } from "@/services/analysisService";
 import { useNavigate } from "react-router-dom";
 import { Play, Loader2 } from "lucide-react";
+import { toast as sonnerToast } from "sonner"; 
 
 interface RunAnalysisButtonProps {
   projectId: string;
@@ -51,9 +52,10 @@ const RunAnalysisButton = ({
     setIsLoading(true);
     
     try {
-      toast({
-        title: "Starting analysis",
-        description: "Preparing your documents for analysis..."
+      // Use sonner for in-process notifications that won't pile up
+      sonnerToast.loading("Starting analysis...", {
+        description: "Preparing your documents for analysis",
+        id: "analysis-start"
       });
       
       const batchId = await analysisService.startAnalysis({
@@ -61,14 +63,21 @@ const RunAnalysisButton = ({
         agentIds
       });
       
+      // Dismiss the loading toast and show success
+      sonnerToast.success("Analysis started", {
+        description: "Your analysis is running in the background",
+        id: "analysis-start"
+      });
+      
       // Navigate to the results page
       navigate(`/project/${projectId}/results/${batchId}`);
     } catch (error) {
       console.error("Error starting analysis:", error);
-      toast({
-        variant: "destructive",
-        title: "Error starting analysis",
-        description: "There was a problem starting the analysis. Please try again."
+      
+      // Dismiss the loading toast and show error
+      sonnerToast.error("Error starting analysis", {
+        description: "There was a problem starting the analysis. Please try again.",
+        id: "analysis-start"
       });
     } finally {
       setIsLoading(false);

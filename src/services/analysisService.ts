@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
@@ -42,6 +43,9 @@ export interface AnalysisResult {
 
 // Mock implementation for demo purposes
 class AnalysisService {
+  // Track analyses that have shown completion toasts to prevent duplicates
+  private completedToasts: Set<string> = new Set();
+
   async startAnalysis(request: AnalysisRequest): Promise<string> {
     console.log("Starting analysis for project:", request.projectId);
     console.log("Selected agents:", request.agentIds);
@@ -139,12 +143,17 @@ class AnalysisService {
       
       localStorage.setItem(`analysis_${batchId}`, JSON.stringify(analysisData));
       
-      // Notify completion via toast (if the user is still on the page)
-      toast({
-        title: "Analysis Complete!",
-        description: `Analysis of ${documents.length} documents with ${request.agentIds.length} agents is complete.`,
-        duration: 5000,
-      });
+      // Only show completion toast if we haven't shown it for this batch yet
+      if (!this.completedToasts.has(batchId)) {
+        this.completedToasts.add(batchId);
+        
+        // Notify completion via toast (if the user is still on the page)
+        toast({
+          title: "Analysis Complete!",
+          description: `Analysis of ${documents.length} documents with ${request.agentIds.length} agents is complete.`,
+          duration: 5000,
+        });
+      }
       
     } catch (error) {
       console.error("Error processing analysis batch:", error);
