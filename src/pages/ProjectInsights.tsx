@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -34,7 +33,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { projectService, Project } from "@/services/projectService";
-import { insightsService, ProjectInsights, InsightMetric, InsightCategory, InsightTrend, InsightSummary } from "@/services/insightsService";
+import { insightsService, InsightMetric, InsightCategory, InsightTrend, InsightSummary } from "@/services/insightsService";
+import type { ProjectInsights } from "@/services/insightsService";
 import { useToast } from "@/hooks/use-toast";
 import {
   BarChart,
@@ -71,7 +71,7 @@ const ProjectInsights = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
-  const [insights, setInsights] = useState<ProjectInsightsType | null>(null);
+  const [insights, setInsights] = useState<ProjectInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   
@@ -85,7 +85,6 @@ const ProjectInsights = () => {
     
     setLoading(true);
     
-    // Load project data
     const projectData = projectService.getProject(id);
     if (!projectData) {
       toast({
@@ -99,7 +98,6 @@ const ProjectInsights = () => {
     
     setProject(projectData);
     
-    // Load insights data
     const insightsData = insightsService.getProjectInsights(id);
     setInsights(insightsData);
     
@@ -279,7 +277,6 @@ const ProjectInsights = () => {
               </div>
             </div>
             
-            {/* Metrics Cards Section */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {insights.metrics.map((metric) => (
                 <MetricCard key={metric.id} metric={metric} />
@@ -516,10 +513,10 @@ const ProjectInsights = () => {
                           <Legend />
                           {Array.from(new Set(insights.trends.map(item => item.category))).map((category, index) => (
                             <Line
-                              key={category}
+                              key={String(category)}
                               type="monotone"
                               dataKey="value"
-                              name={category}
+                              name={String(category)}
                               stroke={COLORS[index % COLORS.length]}
                               activeDot={{ r: 8 }}
                               data={insights.trends.filter(item => item.category === category)}
@@ -632,7 +629,6 @@ const ProjectInsights = () => {
   );
 };
 
-// Metric Card Component
 const MetricCard = ({ metric }: { metric: InsightMetric }) => {
   return (
     <Card>
@@ -673,9 +669,7 @@ const MetricCard = ({ metric }: { metric: InsightMetric }) => {
   );
 };
 
-// Composed Chart for Themes
 const ComposedChartThemes = ({ data }: { data: any[] }) => {
-  // Prepare data for the chart
   const chartData = data.map(item => ({
     name: item.name,
     value: item.value,
