@@ -65,7 +65,7 @@ const AgentSettings = () => {
     const fetchAgents = async () => {
       try {
         setIsLoading(true);
-        const fetchedAgents = await agentService.getAgents(supabase);
+        const fetchedAgents = await agentService.getAgents();
         setAgents(fetchedAgents);
       } catch (error) {
         console.error("Error fetching agents:", error);
@@ -80,7 +80,7 @@ const AgentSettings = () => {
     };
 
     fetchAgents();
-  }, [supabase]);
+  }, []);
 
   const handleAgentSelect = (agent: any) => {
     setSelectedAgent(agent);
@@ -157,7 +157,8 @@ const AgentSettings = () => {
         is_constraints_enabled: isAgentConstraintsEnabled,
       };
       
-      await agentService.updateAgent(supabase, updatedAgent);
+      // Use the updated function signature
+      await agentService.updateAgent(updatedAgent);
       
       setAgents(agents.map(agent => 
         agent.id === selectedAgent.id ? updatedAgent : agent
@@ -205,7 +206,8 @@ const AgentSettings = () => {
         is_constraints_enabled: true,
       };
       
-      const createdAgent = await agentService.createAgent(supabase, newAgent);
+      // Use the updated function signature
+      const createdAgent = await agentService.createAgent(newAgent);
       
       setAgents([...agents, createdAgent]);
       handleAgentSelect(createdAgent);
@@ -232,7 +234,8 @@ const AgentSettings = () => {
     
     try {
       setIsLoading(true);
-      await agentService.deleteAgent(supabase, selectedAgent.id);
+      // Use the updated function signature
+      await agentService.deleteAgent(selectedAgent.id);
       
       setAgents(agents.filter(agent => agent.id !== selectedAgent.id));
       setSelectedAgent(null);

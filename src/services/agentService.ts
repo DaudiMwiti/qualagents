@@ -3,142 +3,8 @@ import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Agent as AgentType, createSubscription } from "@/types/agent";
 
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  model: string;
-  temperature: number;
-  max_tokens: number;
-  prompt: string;
-  is_active: boolean;
-  is_public: boolean;
-  // Include all the other properties needed for the AgentSettings component
-  is_safe_mode: boolean;
-  is_streaming: boolean;
-  is_context_aware: boolean;
-  is_knowledge_enabled: boolean;
-  is_tools_enabled: boolean;
-  is_reasoning_enabled: boolean;
-  is_memory_enabled: boolean;
-  is_goals_enabled: boolean;
-  is_constraints_enabled: boolean;
-  is_self_improvement_enabled: boolean;
-  is_long_term_planning_enabled: boolean;
-  is_multi_agent_collaboration_enabled: boolean;
-  is_emotional_intelligence_enabled: boolean;
-  is_ethical_framework_enabled: boolean;
-  is_creativity_enhancement_enabled: boolean;
-  is_critical_thinking_enhancement_enabled: boolean;
-  is_learning_from_feedback_enabled: boolean;
-  is_complex_problem_solving_enabled: boolean;
-  is_decision_making_enabled: boolean;
-  is_risk_assessment_enabled: boolean;
-  is_resource_management_enabled: boolean;
-  is_time_management_enabled: boolean;
-  is_communication_skills_enabled: boolean;
-  is_negotiation_skills_enabled: boolean;
-  is_leadership_skills_enabled: boolean;
-  is_teamwork_skills_enabled: boolean;
-  is_adaptability_skills_enabled: boolean;
-  is_stress_management_skills_enabled: boolean;
-  is_conflict_resolution_skills_enabled: boolean;
-  is_cultural_sensitivity_skills_enabled: boolean;
-  is_emotional_regulation_skills_enabled: boolean;
-  is_empathy_skills_enabled: boolean;
-  is_social_awareness_skills_enabled: boolean;
-  is_self_awareness_skills_enabled: boolean;
-  is_self_regulation_skills_enabled: boolean;
-  is_motivation_skills_enabled: boolean;
-  is_resilience_skills_enabled: boolean;
-  is_optimism_skills_enabled: boolean;
-  is_curiosity_skills_enabled: boolean;
-  is_open_mindedness_skills_enabled: boolean;
-  is_humility_skills_enabled: boolean;
-  is_gratitude_skills_enabled: boolean;
-  is_forgiveness_skills_enabled: boolean;
-  is_compassion_skills_enabled: boolean;
-  is_kindness_skills_enabled: boolean;
-  is_generosity_skills_enabled: boolean;
-  is_service_skills_enabled: boolean;
-  is_justice_skills_enabled: boolean;
-  is_courage_skills_enabled: boolean;
-  is_perseverance_skills_enabled: boolean;
-  is_patience_skills_enabled: boolean;
-  is_honesty_skills_enabled: boolean;
-  is_integrity_skills_enabled: boolean;
-  is_responsibility_skills_enabled: boolean;
-  is_accountability_skills_enabled: boolean;
-  is_loyalty_skills_enabled: boolean;
-  is_respect_skills_enabled: boolean;
-  is_tolerance_skills_enabled: boolean;
-  is_acceptance_skills_enabled: boolean;
-  is_inclusivity_skills_enabled: boolean;
-  is_diversity_skills_enabled: boolean;
-  is_equity_skills_enabled: boolean;
-  is_belonging_skills_enabled: boolean;
-  is_wellbeing_skills_enabled: boolean;
-  is_happiness_skills_enabled: boolean;
-  is_fulfillment_skills_enabled: boolean;
-  is_meaning_skills_enabled: boolean;
-  is_purpose_skills_enabled: boolean;
-  is_legacy_skills_enabled: boolean;
-  is_impact_skills_enabled: boolean;
-  is_transformation_skills_enabled: boolean;
-  is_growth_skills_enabled: boolean;
-  is_learning_skills_enabled: boolean;
-  is_development_skills_enabled: boolean;
-  is_improvement_skills_enabled: boolean;
-  is_progress_skills_enabled: boolean;
-  is_success_skills_enabled: boolean;
-  is_achievement_skills_enabled: boolean;
-  is_recognition_skills_enabled: boolean;
-  is_appreciation_skills_enabled: boolean;
-  is_celebration_skills_enabled: boolean;
-  is_joy_skills_enabled: boolean;
-  is_peace_skills_enabled: boolean;
-  is_love_skills_enabled: boolean;
-  is_hope_skills_enabled: boolean;
-  is_faith_skills_enabled: boolean;
-  is_charity_skills_enabled: boolean;
-  is_virtue_skills_enabled: boolean;
-  is_goodness_skills_enabled: boolean;
-  is_truth_skills_enabled: boolean;
-  is_beauty_skills_enabled: boolean;
-  is_wisdom_skills_enabled: boolean;
-  is_knowledge_skills_enabled: boolean;
-  is_understanding_skills_enabled: boolean;
-  is_insight_skills_enabled: boolean;
-  is_intuition_skills_enabled: boolean;
-  is_imagination_skills_enabled: boolean;
-  is_creativity_skills_enabled: boolean;
-  is_innovation_skills_enabled: boolean;
-  is_originality_skills_enabled: boolean;
-  is_vision_skills_enabled: boolean;
-  is_strategy_skills_enabled: boolean;
-  is_planning_skills_enabled: boolean;
-  is_organization_skills_enabled: boolean;
-  is_execution_skills_enabled: boolean;
-  is_monitoring_skills_enabled: boolean;
-  is_evaluation_skills_enabled: boolean;
-  is_adaptationSkillsEnabled: boolean;
-  
-  // Additional properties from AgentType interface
-  type?: string;
-  status?: 'idle' | 'analyzing' | 'complete' | 'error';
-  insights?: string[];
-  methodology?: string;
-  framework?: string;
-  confidence?: number;
-  persona?: {
-    id: string;
-    name: string;
-    description: string;
-    traits: string[];
-    avatar?: string;
-  };
-  pinnedMethodologies?: string[];
-}
+// Using the imported Agent type (AgentType) from types/agent.ts
+export type Agent = AgentType;
 
 class AgentService {
   async getAgents(supabase?: any) {
@@ -307,7 +173,7 @@ class AgentService {
     }
   }
 
-  subscribeToAgentUpdates(agentId: string, callback: (agent: any) => void) {
+  subscribeToAgentUpdates(agentId: string, callback: (agent: Agent) => void) {
     console.log(`Subscribing to updates for agent: ${agentId}`);
     // Mock implementation - return a subscription object
     return createSubscription(() => {
@@ -390,15 +256,17 @@ class AgentService {
     };
   }
 
-  async updateAgent(agentId: string, agentData: any) {
-    console.log(`Updating agent ${agentId}:`, agentData);
+  // Update function signature to accept agent directly instead of supabase and agent
+  async updateAgent(agentData: any) {
+    console.log(`Updating agent ${agentData.id}:`, agentData);
     // Mock implementation
     return {
-      id: agentId,
+      id: agentData.id,
       ...agentData
     };
   }
 
+  // Update function signature to accept agentData directly instead of supabase and agentData
   async createAgent(agentData: any) {
     console.log("Creating agent:", agentData);
     // Mock implementation
@@ -410,6 +278,7 @@ class AgentService {
     };
   }
 
+  // Update function signature to accept agentId directly instead of supabase and agentId
   async deleteAgent(agentId: string) {
     console.log(`Deleting agent: ${agentId}`);
     // Mock implementation
