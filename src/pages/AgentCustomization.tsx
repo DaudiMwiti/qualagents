@@ -6,9 +6,18 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
   Agent,
-  agentService
-} from "@/services/agentService";
+  AgentPersona
+} from "@/types/agent";
+import { agentService } from "@/services/agentService";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -17,6 +26,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { 
+  Brain, 
+  Check, 
+  FileText, 
+  Pin, 
+  Plus, 
+  Save, 
+  Sparkles, 
+  User 
+} from "lucide-react";
 
 const AgentCustomization = () => {
   const navigate = useNavigate();
@@ -33,7 +52,6 @@ const AgentCustomization = () => {
   const [pinnedMethodologies, setPinnedMethodologies] = useState<string[]>([]);
   
   useEffect(() => {
-    // Load personas and methodologies
     setPersonas(agentService.getPersonas());
     setMethodologies(agentService.getMethodologies());
   }, []);
