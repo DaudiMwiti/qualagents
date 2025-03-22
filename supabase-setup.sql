@@ -132,8 +132,6 @@ CREATE TABLE public.insight_feedback (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create RLS policies
-
 -- Enable RLS on all tables
 ALTER TABLE public.agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_personas ENABLE ROW LEVEL SECURITY;
@@ -169,14 +167,14 @@ CREATE POLICY "Project collaborators can read project documents" ON public.docum
     )
   );
 
--- Insert some initial data for agent personas
-INSERT INTO public.agent_personas (id, name, description, traits)
+-- Insert some initial data for agent personas - using UUID generation
+INSERT INTO public.agent_personas (name, description, traits)
 VALUES 
-  ('critical-theorist', 'Critical Theorist', 'Examines power structures and societal influences in the data', ARRAY['Critical', 'Analytical', 'Questioning']),
-  ('methodological-pragmatist', 'Methodological Pragmatist', 'Focuses on practical implications and actionable insights', ARRAY['Practical', 'Results-oriented', 'Systematic']),
-  ('interpretive-phenomenologist', 'Interpretive Phenomenologist', 'Explores lived experiences and subjective perspectives', ARRAY['Empathetic', 'Reflective', 'Detail-oriented']),
-  ('constructivist', 'Constructivist', 'Examines how meaning is constructed through social interaction', ARRAY['Contextual', 'Relational', 'Process-focused']),
-  ('post-positivist', 'Post-Positivist', 'Balances objectivity with recognition of research limitations', ARRAY['Objective', 'Rigorous', 'Cautious']);
+  ('Critical Theorist', 'Examines power structures and societal influences in the data', ARRAY['Critical', 'Analytical', 'Questioning']),
+  ('Methodological Pragmatist', 'Focuses on practical implications and actionable insights', ARRAY['Practical', 'Results-oriented', 'Systematic']),
+  ('Interpretive Phenomenologist', 'Explores lived experiences and subjective perspectives', ARRAY['Empathetic', 'Reflective', 'Detail-oriented']),
+  ('Constructivist', 'Examines how meaning is constructed through social interaction', ARRAY['Contextual', 'Relational', 'Process-focused']),
+  ('Post-Positivist', 'Balances objectivity with recognition of research limitations', ARRAY['Objective', 'Rigorous', 'Cautious']);
 
 -- Create a function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_modified_column()
