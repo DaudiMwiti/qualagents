@@ -6,11 +6,15 @@ from typing import List, Optional
 import os
 import uuid
 from langchain.agents import AgentExecutor
-from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.tools import tool
 from langgraph.graph import StateGraph
 from langchain.schema import HumanMessage, AIMessage
+from transformers import pipeline
+from langchain.llms import HuggingFacePipeline
+
+# Load environment variables for model configuration
+MODEL_NAME = os.getenv("LOCAL_LLM_MODEL", "mistralai/Mistral-7B-Instruct-v0.1")
 
 app = FastAPI(title="LangGraph Analysis Service")
 
@@ -46,8 +50,17 @@ AGENT_METHODS = {
 
 def create_agent_for_method(agent_id: str):
     """Create a specific agent based on methodology"""
-    # This would be more sophisticated in a real implementation
-    llm = ChatOpenAI(temperature=0.7)
+    # Create Hugging Face pipeline
+    hf_pipeline = pipeline(
+        "text-generation",
+        model=MODEL_NAME,
+        max_new_tokens=256,
+        do_sample=True,
+        temperature=0.7
+    )
+    
+    # Create LangChain wrapper
+    llm = HuggingFacePipeline(pipeline=hf_pipeline)
     
     @tool
     def analyze_data(query: str) -> str:
@@ -65,8 +78,10 @@ def create_agent_for_method(agent_id: str):
     
     def agent_node(state):
         messages = state.messages
-        response = llm.invoke(messages[-1].content if messages else "No input provided")
-        return {"messages": messages + [AIMessage(content=response.content)], "next": "output"}
+        input_content = messages[-1].content if messages else "No input provided"
+        # Use the HuggingFacePipeline for generating responses
+        response = llm.invoke(input_content)
+        return {"messages": messages + [AIMessage(content=response)], "next": "output"}
     
     def output_node(state):
         return state

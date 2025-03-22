@@ -1,13 +1,14 @@
 
 # LangGraph Analysis Service
 
-This is a FastAPI backend service that uses LangGraph and LangChain to analyze data using various methodological approaches.
+This is a FastAPI backend service that uses LangGraph and LangChain with Hugging Face Transformers to analyze data using various methodological approaches.
 
 ## Setup
 
 ### Prerequisites
 - Python 3.9+
-- OpenAI API key
+- At least 8GB RAM (for running Mistral 7B model)
+- GPU recommended but not required
 
 ### Local Development
 
@@ -26,7 +27,10 @@ This is a FastAPI backend service that uses LangGraph and LangChain to analyze d
    ```
    cp .env.example .env
    ```
-6. Add your OpenAI API key to the `.env` file
+6. Optionally, change the model in the `.env` file:
+   ```
+   LOCAL_LLM_MODEL=mistralai/Mistral-7B-Instruct-v0.1
+   ```
 7. Run the server:
    ```
    uvicorn app:app --reload
@@ -42,7 +46,7 @@ The API will be available at `http://localhost:8000`
    ```
 2. Run the container:
    ```
-   docker run -p 8000:8000 -e OPENAI_API_KEY=your_key_here langgraph-service
+   docker run -p 8000:8000 langgraph-service
    ```
 
 ## API Endpoints
@@ -92,3 +96,12 @@ To use this service with the React frontend:
 - `bias-identification` - Bias Identification Agent
 - `critical-analysis` - Critical Analysis Agent
 - `phenomenological` - Phenomenological Agent
+
+## Model Configuration
+
+By default, this service uses the Mistral-7B-Instruct-v0.1 model from Hugging Face. You can change the model by setting the `LOCAL_LLM_MODEL` environment variable.
+
+Some recommended models:
+- `mistralai/Mistral-7B-Instruct-v0.1`
+- `TheBloke/Llama-2-7B-Chat-GGUF` (requires GGUF support)
+- `google/flan-t5-large` (smaller, faster)
