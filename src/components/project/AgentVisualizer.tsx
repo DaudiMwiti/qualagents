@@ -9,7 +9,9 @@ import {
   Search,
   Network,
   ArrowRightLeft,
-  Info
+  Info,
+  ThumbsUp,
+  ThumbsDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
   const [isLoading, setIsLoading] = useState(true);
   const [agentInteractions, setAgentInteractions] = useState<Record<string, string[]>>({});
   const [isCollaborating, setIsCollaborating] = useState(false);
+  
+  const [feedbackCounts, setFeedbackCounts] = useState<Record<string, { positive: number, negative: number }>>({});
   
   useEffect(() => {
     const loadAgents = async () => {
@@ -62,6 +66,16 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
     };
     
     loadAgents();
+    
+    // Mock feedback counts
+    const mockFeedbackCounts: Record<string, { positive: number, negative: number }> = {};
+    getMockAgents().forEach(agent => {
+      mockFeedbackCounts[agent.id] = {
+        positive: Math.floor(Math.random() * 10),
+        negative: Math.floor(Math.random() * 3)
+      };
+    });
+    setFeedbackCounts(mockFeedbackCounts);
   }, [projectId, supabase.auth]);
   
   useEffect(() => {
@@ -207,6 +221,7 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
                 isActive={agent.id === activeAgent}
                 onClick={() => handleAgentClick(agent)}
                 lastMessage={agentInteractions[agent.id]?.slice(-1)[0]}
+                feedbackCount={feedbackCounts[agent.id]}
               />
             ))}
           </div>
@@ -281,7 +296,22 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
                         className="flex items-start p-2 bg-secondary/40 rounded-lg text-sm"
                       >
                         <CircleCheck className="h-4 w-4 text-primary shrink-0 mt-0.5 mr-2" />
-                        <span>{insight}</span>
+                        <div className="flex-1">
+                          <span>{insight}</span>
+                          
+                          {feedbackCounts[currentAgent.id] && (
+                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                              <div className="flex items-center">
+                                <ThumbsUp className="h-3 w-3 mr-0.5" />
+                                <span>{feedbackCounts[currentAgent.id].positive}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <ThumbsDown className="h-3 w-3 mr-0.5" />
+                                <span>{feedbackCounts[currentAgent.id].negative}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </motion.li>
                     ))}
                   </ul>
@@ -337,9 +367,10 @@ type AgentCardProps = {
   isActive: boolean;
   onClick: () => void;
   lastMessage?: string;
+  feedbackCount?: { positive: number, negative: number };
 };
 
-const AgentCard = ({ agent, isActive, onClick, lastMessage }: AgentCardProps) => {
+const AgentCard = ({ agent, isActive, onClick, lastMessage, feedbackCount }: AgentCardProps) => {
   const getStatusIcon = (status: Agent["status"]) => {
     switch (status) {
       case "complete":
@@ -377,6 +408,21 @@ const AgentCard = ({ agent, isActive, onClick, lastMessage }: AgentCardProps) =>
           isActive ? "text-primary-foreground/70" : "text-muted-foreground/70"
         }`}>
           "{lastMessage}"
+        </div>
+      )}
+      
+      {feedbackCount && (agent.status === "complete" || agent.status === "analyzing") && (
+        <div className={`text-xs mt-auto pt-1.5 flex items-center gap-2 ${
+          isActive ? "text-primary-foreground/70" : "text-muted-foreground/70"
+        }`}>
+          <div className="flex items-center">
+            <ThumbsUp className="h-3 w-3 mr-0.5" />
+            <span>{feedbackCount.positive}</span>
+          </div>
+          <div className="flex items-center">
+            <ThumbsDown className="h-3 w-3 mr-0.5" />
+            <span>{feedbackCount.negative}</span>
+          </div>
         </div>
       )}
     </motion.div>
