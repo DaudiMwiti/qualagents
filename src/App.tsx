@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -70,7 +71,6 @@ const App = () => {
       <SessionContextProvider supabaseClient={supabase}>
         <ThemePreferenceProvider>
           <TooltipProvider>
-            <Toaster />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -85,10 +85,10 @@ const App = () => {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/agent-settings" element={<AgentSettings />} />
                 <Route path="/profile" element={<Profile />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            <Toaster />
           </TooltipProvider>
         </ThemePreferenceProvider>
       </SessionContextProvider>
