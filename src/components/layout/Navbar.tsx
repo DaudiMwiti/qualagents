@@ -3,9 +3,17 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Database, Settings, LucideBot } from "lucide-react";
+import { Database, Settings, LucideBot, User } from "lucide-react";
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { toast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -82,6 +90,9 @@ const Navbar = () => {
           <NavLink to="/agent-settings" active={location.pathname === "/agent-settings"}>
             AI Agents
           </NavLink>
+          <NavLink to="/profile" active={location.pathname === "/profile"}>
+            Profile
+          </NavLink>
           <NavLink to="/settings" active={location.pathname === "/settings"}>
             Settings
           </NavLink>
@@ -95,11 +106,32 @@ const Navbar = () => {
                   <LucideBot className="h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="icon" className="h-9 w-9">
-                <Link to="/settings">
-                  <Settings className="h-5 w-5" />
-                </Link>
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer w-full">
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer w-full">
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
           

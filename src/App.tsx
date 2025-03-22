@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import AgentSettings from "./pages/AgentSettings";
 import NotFound from "./pages/NotFound";
 import DataUpload from "./pages/DataUpload";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +69,7 @@ const App = () => (
             <Route path="/data-upload/:projectId?" element={<DataUpload />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/agent-settings" element={<AgentSettings />} />
+            <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
