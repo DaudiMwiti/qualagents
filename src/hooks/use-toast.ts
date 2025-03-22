@@ -1,8 +1,5 @@
 
-import { toast } from "@/components/ui/use-toast";
+// Re-export the useToast and toast from the components/ui/use-toast file
+import { useToast, toast } from "@/components/ui/use-toast";
 
-export const useToast = () => {
-  return { toast };
-};
-
-export { toast };
+export { useToast, toast };

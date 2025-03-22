@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -31,7 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import AgentVisualizer from "@/components/project/AgentVisualizer";
 import { agentService } from "@/services/agentService";
@@ -81,8 +80,6 @@ const AgentSettings = () => {
   const [isAgentMemoryEnabled, setIsAgentMemoryEnabled] = useState(true);
   const [isAgentGoalsEnabled, setIsAgentGoalsEnabled] = useState(true);
   const [isAgentConstraintsEnabled, setIsAgentConstraintsEnabled] = useState(true);
-  
-  // Agent capabilities
   const [isAgentSelfImprovementEnabled, setIsAgentSelfImprovementEnabled] = useState(true);
   const [isAgentLongTermPlanningEnabled, setIsAgentLongTermPlanningEnabled] = useState(true);
   const [isAgentMultiAgentCollaborationEnabled, setIsAgentMultiAgentCollaborationEnabled] = useState(true);
@@ -96,8 +93,6 @@ const AgentSettings = () => {
   const [isAgentRiskAssessmentEnabled, setIsAgentRiskAssessmentEnabled] = useState(true);
   const [isAgentResourceManagementEnabled, setIsAgentResourceManagementEnabled] = useState(true);
   const [isAgentTimeManagementEnabled, setIsAgentTimeManagementEnabled] = useState(true);
-  
-  // Agent skills
   const [isAgentCommunicationSkillsEnabled, setIsAgentCommunicationSkillsEnabled] = useState(true);
   const [isAgentNegotiationSkillsEnabled, setIsAgentNegotiationSkillsEnabled] = useState(true);
   const [isAgentLeadershipSkillsEnabled, setIsAgentLeadershipSkillsEnabled] = useState(true);
@@ -184,14 +179,12 @@ const AgentSettings = () => {
   const [isAgentMonitoringSkillsEnabled, setIsAgentMonitoringSkillsEnabled] = useState(true);
   const [isAgentEvaluationSkillsEnabled, setIsAgentEvaluationSkillsEnabled] = useState(true);
   const [isAgentAdaptationSkillsEnabled, setIsAgentAdaptationSkillsEnabled] = useState(true);
-  
   const supabase = useSupabaseClient();
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        // Update from getAgents to getAll method
-        const fetchedAgents = await agentService.getAll(supabase);
+        const fetchedAgents = await agentService.getAgents(supabase);
         setAgents(fetchedAgents);
       } catch (error) {
         console.error("Error fetching agents:", error);
@@ -403,134 +396,4 @@ const AgentSettings = () => {
       setIsAgentAcceptanceSkillsEnabled(selectedAgent.is_acceptance_skills_enabled);
       setIsAgentInclusivitySkillsEnabled(selectedAgent.is_inclusivity_skills_enabled);
       setIsAgentDiversitySkillsEnabled(selectedAgent.is_diversity_skills_enabled);
-    }
-  };
-
-  return (
-    <PageTransition>
-      <Navbar />
-      <div className="container mx-auto py-10">
-        <h1 className="text-3xl font-bold mb-6">Agent Settings</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Agent List</CardTitle>
-                <CardDescription>
-                  Select an agent to view and edit settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {agents.length > 0 ? (
-                    agents.map((agent) => (
-                      <Button
-                        key={agent.id}
-                        variant={selectedAgent?.id === agent.id ? "default" : "outline"}
-                        className="w-full justify-start"
-                        onClick={() => handleAgentSelect(agent)}
-                      >
-                        <LucideBot className="mr-2 h-4 w-4" />
-                        {agent.name}
-                      </Button>
-                    ))
-                  ) : (
-                    <div className="text-center py-6 text-muted-foreground">
-                      No agents found
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Agent
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-          
-          <div className="md:col-span-2">
-            {selectedAgent ? (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div>
-                    <CardTitle>{selectedAgent.name}</CardTitle>
-                    <CardDescription>
-                      Agent ID: {selectedAgent.id}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {isEditing ? (
-                      <>
-                        <Button variant="outline" size="sm" onClick={handleCancelClick}>
-                          <X className="mr-2 h-4 w-4" />
-                          Cancel
-                        </Button>
-                        <Button size="sm">
-                          <Save className="mr-2 h-4 w-4" />
-                          Save
-                        </Button>
-                      </>
-                    ) : (
-                      <Button variant="outline" size="sm" onClick={handleEditClick}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Basic Settings</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="agent-name">Name</Label>
-                        <Input
-                          id="agent-name"
-                          value={newAgentName}
-                          onChange={(e) => setNewAgentName(e.target.value)}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="agent-description">Description</Label>
-                        <Textarea
-                          id="agent-description"
-                          value={newAgentDescription}
-                          onChange={(e) => setNewAgentDescription(e.target.value)}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="agent-model">Model</Label>
-                        <Input
-                          id="agent-model"
-                          value={newAgentModel}
-                          onChange={(e) => setNewAgentModel(e.target.value)}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center h-64">
-                  <FileCog className="h-16 w-16 text-muted-foreground mb-4" />
-                  <p className="text-center text-muted-foreground">
-                    Select an agent from the list to view and edit settings
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-      </div>
-    </PageTransition>
-  );
-};
-
-export default AgentSettings;
+      setIsAgentEquitySkillsEnabled(selectedAgent.is_equ
