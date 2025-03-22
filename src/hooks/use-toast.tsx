@@ -1,11 +1,12 @@
 
+import React from "react";
 import {
   toast as sonnerToast,
-  type Toast,
   ToastT,
 } from "sonner";
 
-export type ToastProps = Omit<ToastT, "description"> & {
+// Fix the type definition to make id optional
+export type ToastProps = Partial<Omit<ToastT, "description">> & {
   description?: React.ReactNode;
   variant?: "default" | "destructive" | "success" | "info" | "warning";
   onOpenChange?: (open: boolean) => void;

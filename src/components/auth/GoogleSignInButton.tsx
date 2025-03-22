@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { LucideChrome } from "lucide-react";
 
 interface GoogleSignInButtonProps {
@@ -18,6 +18,7 @@ const GoogleSignInButton = ({
 }: GoogleSignInButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = useSupabaseClient();
+  const { toast } = useToast();
 
   const handleGoogleSignIn = async () => {
     try {
