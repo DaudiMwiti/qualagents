@@ -27,6 +27,9 @@ import {
   Share2,
   Info,
   Star,
+  FileText,
+  FileJson,
+  Table as TableIcon,
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -51,6 +54,15 @@ import {
   AreaChart,
   ComposedChart,
 } from "recharts";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportAsPdf, exportAsMarkdown, exportAsCsv, exportAsJson } from "@/utils/exportUtils";
 
 const COLORS = ["#8B5CF6", "#22D3EE", "#10B981", "#F59E0B", "#EF4444", "#EC4899"];
 
@@ -61,6 +73,7 @@ const ProjectInsights = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [insights, setInsights] = useState<ProjectInsightsType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -92,6 +105,49 @@ const ProjectInsights = () => {
     
     setLoading(false);
   }, [id, navigate, toast]);
+  
+  const handleExport = async (format: 'pdf' | 'markdown' | 'csv' | 'json') => {
+    if (!project || !insights) return;
+    
+    setExporting(true);
+    
+    try {
+      let success = false;
+      
+      switch (format) {
+        case 'pdf':
+          success = await exportAsPdf(project, insights);
+          break;
+        case 'markdown':
+          success = exportAsMarkdown(project, insights);
+          break;
+        case 'csv':
+          success = exportAsCsv(project, insights);
+          break;
+        case 'json':
+          success = exportAsJson(project, insights);
+          break;
+      }
+      
+      if (success) {
+        toast({
+          title: "Export successful",
+          description: `Insights exported successfully as ${format.toUpperCase()}!`,
+        });
+      } else {
+        throw new Error(`Failed to export as ${format}`);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: `There was a problem exporting your insights. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
   
   if (loading) {
     return (
@@ -188,12 +244,38 @@ const ProjectInsights = () => {
                   <Share2 className="mr-2 h-4 w-4" />
                   Share
                 </Button>
-                <Button 
-                  className="h-9"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Report
-                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      className="h-9"
+                      disabled={exporting}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      {exporting ? "Exporting..." : "Export Report"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Export as PDF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Export as Markdown (.md)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>
+                      <TableIcon className="mr-2 h-4 w-4" />
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('json')}>
+                      <FileJson className="mr-2 h-4 w-4" />
+                      Export as JSON
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             

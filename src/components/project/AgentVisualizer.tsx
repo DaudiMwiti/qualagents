@@ -11,13 +11,23 @@ import {
   ArrowRightLeft,
   Info,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Download
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Agent, agentService } from "@/services/agentService";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { saveAs } from 'file-saver';
 
 type AgentVisualizerProps = {
   projectId: string;
@@ -67,7 +77,6 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
     
     loadAgents();
     
-    // Mock feedback counts
     const mockFeedbackCounts: Record<string, { positive: number, negative: number }> = {};
     getMockAgents().forEach(agent => {
       mockFeedbackCounts[agent.id] = {
@@ -166,6 +175,66 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
     }
   };
 
+  const exportAgentInsights = (agent: Agent, format: 'markdown' | 'json') => {
+    if (!agent || !agent.insights || agent.insights.length === 0) {
+      toast({
+        title: "No insights to export",
+        description: "This agent hasn't generated any insights yet.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const now = new Date().toISOString().split('T')[0];
+      
+      if (format === 'markdown') {
+        let markdown = `# ${agent.name} Insights\n\n`;
+        markdown += `## Agent Type: ${agent.type}\n\n`;
+        markdown += `Generated on: ${now}\n\n`;
+        markdown += `---\n\n`;
+        
+        agent.insights.forEach((insight, idx) => {
+          markdown += `### Insight ${idx + 1}\n\n`;
+          markdown += `${insight}\n\n`;
+        });
+        
+        markdown += `---\n\n`;
+        markdown += `*Powered by QualAgents AI*\n`;
+        
+        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+        saveAs(blob, `${agent.name.replace(/\s+/g, '_')}_insights.md`);
+      } else if (format === 'json') {
+        const exportData = {
+          agent: {
+            id: agent.id,
+            name: agent.name,
+            type: agent.type,
+            methodology: agent.methodology,
+            confidence: agent.confidence
+          },
+          insights: agent.insights,
+          generatedAt: now
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json;charset=utf-8' });
+        saveAs(blob, `${agent.name.replace(/\s+/g, '_')}_insights.json`);
+      }
+      
+      toast({
+        title: "Export successful",
+        description: `Agent insights exported as ${format.toUpperCase()}!`
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: "There was a problem exporting the insights. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {isLoading ? (
@@ -248,16 +317,41 @@ const AgentVisualizer = ({ projectId, onAgentSelect }: AgentVisualizerProps) => 
                     )}
                   </div>
                 </div>
-                <Badge 
-                  variant={
-                    currentAgent.status === "complete" ? "default" :
-                    currentAgent.status === "analyzing" ? "secondary" :
-                    currentAgent.status === "error" ? "destructive" : "outline"
-                  }
-                  className="capitalize"
-                >
-                  {currentAgent.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant={
+                      currentAgent.status === "complete" ? "default" :
+                      currentAgent.status === "analyzing" ? "secondary" :
+                      currentAgent.status === "error" ? "destructive" : "outline"
+                    }
+                    className="capitalize"
+                  >
+                    {currentAgent.status}
+                  </Badge>
+                  
+                  {currentAgent.status === "complete" && currentAgent.insights.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-7">
+                          <Download className="h-3.5 w-3.5 mr-1" />
+                          Export
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Export Agent Insights</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => exportAgentInsights(currentAgent, 'markdown')}>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Export as Markdown
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => exportAgentInsights(currentAgent, 'json')}>
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          Export as JSON
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </div>
               
               {currentAgent.status === "analyzing" && (
