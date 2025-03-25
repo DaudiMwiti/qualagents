@@ -1,8 +1,6 @@
 
 # QualAgents - AI-Powered Qualitative Research Platform
 
-![QualAgents Platform](![image](https://github.com/user-attachments/assets/fd69448a-96b4-4402-bb2e-b280dc6a93fd)
-)
 
 ## Overview
 
