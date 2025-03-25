@@ -1,87 +1,120 @@
 
-# LangGraph Analysis Service
+# QualAgents LangGraph Backend Service
 
-This is a FastAPI backend service that uses LangGraph and LangChain with Hugging Face Transformers to analyze data using various methodological approaches.
+![QualAgents Backend](https://img.shields.io/badge/QualAgents-Backend-blue)
+![Python](https://img.shields.io/badge/Python-3.9+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104.0+-green)
+![LangGraph](https://img.shields.io/badge/LangGraph-0.0.15+-orange)
+
+## Overview
+
+This repository contains the backend service for the QualAgents platform, an AI-powered qualitative research analysis tool. The service uses LangGraph and LangChain with Hugging Face Transformers to analyze qualitative data through multiple methodological approaches.
+
+## Features
+
+- **Multi-Agent Analysis Pipeline**: Orchestrates multiple AI agents with different methodological frameworks
+- **Methodological Diversity**: Implements Grounded Theory, Feminist Theory, Critical Analysis, Bias Identification, and Phenomenological approaches
+- **Efficient Processing**: Optimized for handling qualitative data with minimal resource requirements
+- **REST API**: Clean API for integration with the QualAgents frontend
+- **Supabase Integration**: Connect to Supabase for data persistence and authentication
+
+## System Requirements
+
+- Python 3.9+
+- 2-4GB RAM (for running flan-t5-large model)
+- CPU-only deployment is sufficient for most use cases
 
 ## Setup
 
-### Prerequisites
-- Python 3.9+
-- 2-4GB RAM (for running flan-t5-large model)
-- CPU-only deployment is sufficient
-
 ### Local Development
 
-1. Clone the repository
-2. Navigate to the `backend/langgraph_service` directory
-3. Create a virtual environment:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/qualagents-langgraph-backend.git
+   cd qualagents-langgraph-backend
    ```
+
+2. Create a virtual environment:
+   ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-4. Install dependencies:
-   ```
+
+3. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
-5. Create a `.env` file from the example:
-   ```
+
+4. Create a `.env` file from the example:
+   ```bash
    cp .env.example .env
    ```
-6. Optionally, change the model in the `.env` file:
+
+5. Configure your `.env` file with appropriate values:
    ```
+   # Model Configuration
    LOCAL_LLM_MODEL=google/flan-t5-large
+
+   # Server Configuration
+   PORT=8000
+
+   # CORS settings (in production, restrict to your frontend URL)
+   CORS_ORIGINS=http://localhost:8080,https://your-frontend-url.com
+
+   # Supabase Integration
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_KEY=your_supabase_anon_key
    ```
-7. Run the server:
-   ```
+
+6. Run the server:
+   ```bash
    uvicorn app:app --reload
    ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8000` with API documentation at `/docs`.
 
-### Using Docker
+### Docker Deployment
 
 1. Build the Docker image:
+   ```bash
+   docker build -t qualagents-langgraph-service .
    ```
-   docker build -t langgraph-service .
-   ```
+
 2. Run the container:
-   ```
-   docker run -p 8000:8000 langgraph-service
+   ```bash
+   docker run -p 8000:8000 --env-file .env qualagents-langgraph-service
    ```
 
 ## Deployment Options
 
 ### Render.com (Recommended)
-1. Push your code to GitHub
-2. In Render.com, create a new Web Service and select your repository
-3. Render will automatically detect the `render.yaml` file and configure the service
-4. Alternatively, you can set up manually with these settings:
-   - Build Command: `pip install -r backend/langgraph_service/requirements.txt`
-   - Start Command: `cd backend/langgraph_service && uvicorn app:app --host 0.0.0.0 --port $PORT`
-   - Environment Variables:
-     - `LOCAL_LLM_MODEL`: `google/flan-t5-large`
-     - `PORT`: `8000`
-     - `CORS_ORIGINS`: Your frontend URL
 
-### Fly.io
-1. Install the Fly CLI
-2. Navigate to the `backend/langgraph_service` directory
-3. Run `fly launch`
-4. Set secrets: `fly secrets set LOCAL_LLM_MODEL=google/flan-t5-large CORS_ORIGINS=https://your-frontend-url.com`
-5. Deploy: `fly deploy`
+This repository includes a `render.yaml` file for easy deployment on Render.com:
 
-### Hugging Face Spaces
-1. Create a new Space with the Gradio SDK
-2. Upload your code
-3. Add a `requirements.txt` file and a `app.py` file
-4. Set the environment variables in the Space settings
+1. Create a new Render.com Web Service
+2. Connect your GitHub repository
+3. Render will automatically detect the configuration
+4. Set your environment variables in the Render dashboard
+5. Deploy
 
-## API Endpoints
+### Alternative Deployment Options
+
+#### Fly.io
+```bash
+fly launch
+fly secrets set LOCAL_LLM_MODEL=google/flan-t5-large CORS_ORIGINS=https://your-frontend-url.com
+fly deploy
+```
+
+#### Hugging Face Spaces
+Create a new Space with the Gradio SDK and upload your code.
+
+## API Documentation
 
 ### POST /run-analysis
 Runs analysis on a project using specified agent methodologies.
 
-Request body:
+**Request:**
 ```json
 {
   "project_id": "string",
@@ -90,7 +123,7 @@ Request body:
 }
 ```
 
-Response:
+**Response:**
 ```json
 {
   "batch_id": "string",
@@ -108,47 +141,74 @@ Response:
 }
 ```
 
-## Integration with Frontend
+## Agent Types
 
-To use this service with the React frontend:
+The service supports multiple agent types, each implementing a different methodological approach:
 
-1. Ensure the service is running (either locally or deployed)
-2. Set the `USE_LANGGRAPH_BACKEND` environment variable to `true` in your frontend environment
-3. Set the `LANGGRAPH_API_URL` to your deployed backend URL
-4. Make sure your frontend's `vite.config.ts` file includes:
-   ```typescript
-   define: {
-     'process.env.USE_LANGGRAPH_BACKEND': JSON.stringify(process.env.USE_LANGGRAPH_BACKEND),
-     'process.env.LANGGRAPH_API_URL': JSON.stringify(process.env.LANGGRAPH_API_URL)
-   }
-   ```
-5. The frontend will automatically connect to this service instead of using the simulated responses
-
-## Available Agent Types
-
-- `grounded-theory` - Grounded Theory Agent
-- `feminist-theory` - Feminist Theory Agent
-- `bias-identification` - Bias Identification Agent
-- `critical-analysis` - Critical Analysis Agent
-- `phenomenological` - Phenomenological Agent
+- `grounded-theory`: Identifies patterns and themes directly from data
+- `feminist-theory`: Analyzes data with attention to gender and power dynamics
+- `bias-identification`: Identifies potential biases in the data or analysis
+- `critical-analysis`: Applies critical theory to uncover underlying assumptions
+- `phenomenological`: Focuses on lived experiences and subjective perceptions
 
 ## Model Configuration
 
-By default, this service uses the google/flan-t5-large model from Hugging Face, which requires less resources than larger models.
+By default, this service uses the `google/flan-t5-large` model from Hugging Face, which provides a good balance between performance and resource usage. You can change the model in your `.env` file.
 
-Some recommended models:
-- `google/flan-t5-large` (default, good balance of performance and resource usage)
+### Recommended Models:
+
+#### For Resource-Constrained Environments:
 - `google/flan-t5-base` (smaller, faster, less resource intensive)
 - `facebook/bart-large-cnn` (good for summarization tasks)
 - `distilgpt2` (very small model for simple text generation)
 
-For more powerful models (requires more resources):
+#### For Higher Performance:
 - `mistralai/Mistral-7B-Instruct-v0.1` (requires 8GB+ RAM)
 - `TheBloke/Llama-2-7B-Chat-GGUF` (requires GGUF support)
 
+## Integration with Frontend
+
+To connect the QualAgents frontend to this backend service:
+
+1. Set the environment variables in your frontend:
+   ```
+   USE_LANGGRAPH_BACKEND=true
+   LANGGRAPH_API_URL=https://your-backend-url.com
+   ```
+
+2. The `runLangGraphAnalysis` function in the frontend will automatically connect to this backend.
+
+## Performance Optimization
+
+If you encounter performance issues:
+
+1. Try a smaller model like `google/flan-t5-base`
+2. Reduce batch size and max_new_tokens in the pipeline configuration
+3. Consider upgrading to a machine with more RAM for larger models
+4. Use quantized models (like GGUF formats) for better performance/resource ratio
+
 ## Troubleshooting
 
-If you encounter Out of Memory (OOM) errors:
-1. Try a smaller model like `google/flan-t5-base` or `distilgpt2`
-2. Reduce batch size and max_new_tokens in the pipeline configuration
-3. Consider deploying on a machine with more RAM
+### Common Issues:
+
+1. **Out of Memory errors**: 
+   - Try a smaller model
+   - Reduce batch size
+   - Increase swap space
+
+2. **Slow response times**:
+   - Use a smaller model
+   - Implement caching for repeated analyses
+   - Consider batching multiple requests
+
+3. **CORS errors**:
+   - Ensure your frontend URL is correctly listed in the CORS_ORIGINS variable
+   - For development, include both localhost URLs
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.

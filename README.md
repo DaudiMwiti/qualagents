@@ -1,69 +1,160 @@
-# Welcome to your Lovable project
 
-## Project info
+# QualAgents - AI-Powered Qualitative Research Platform
 
-**URL**: https://lovable.dev/projects/d7ceb34f-6d75-4b20-b9ae-e515be9b6f5f
+![QualAgents Platform](public/og-image.png)
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+QualAgents is an advanced platform leveraging AI-powered agents for qualitative research analysis. The platform enables researchers, UX professionals, and data analysts to extract meaningful insights from qualitative data through multiple methodological approaches.
 
-**Use Lovable**
+## Core Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d7ceb34f-6d75-4b20-b9ae-e515be9b6f5f) and start prompting.
+- **Multi-Agent Analysis**: Deploy specialized AI agents using different methodological frameworks
+- **Diverse Methodological Approaches**: Including Grounded Theory, Feminist Theory, Critical Analysis, Bias Identification, and Phenomenological approaches
+- **Interactive Insights Dashboard**: Visualize findings through comprehensive charts and data visualization tools
+- **Collaborative Workspace**: Share projects and insights with team members
+- **Data Upload & Management**: Process various data formats including text, CSV, and more
+- **Export & Reporting**: Generate comprehensive reports of your analysis findings
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+### Frontend
+- **Framework**: React with TypeScript
+- **UI Library**: shadcn/ui components with Tailwind CSS
+- **State Management**: React Query for server state, React Context for local state
+- **Routing**: React Router
+- **Data Visualization**: Recharts
+- **Authentication**: Supabase Auth
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Backend
+The backend is implemented as a separate repository: [qualagents-langgraph-backend](https://github.com/your-username/qualagents-langgraph-backend)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Framework**: FastAPI
+- **AI/ML**: LangChain, LangGraph
+- **Models**: Hugging Face Transformers (flan-t5-large by default)
+- **Deployment**: Render.com
 
-Follow these steps:
+## Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
+- Node.js 18+ and npm
+- Git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Frontend Setup
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/qualagents.git
+   cd qualagents
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-**Edit a file directly in GitHub**
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+4. The application will be available at `http://localhost:8080`
 
-**Use GitHub Codespaces**
+### Connecting to the Backend
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The frontend is configured to connect to the LangGraph backend service. To enable this:
 
-## What technologies are used for this project?
+1. Set the following environment variables in your Vite configuration:
+   ```
+   USE_LANGGRAPH_BACKEND=true
+   LANGGRAPH_API_URL=http://localhost:8000  # For local development
+   ```
 
-This project is built with .
+2. For production, update the `LANGGRAPH_API_URL` to point to your deployed backend.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Backend Setup
 
-## How can I deploy this project?
+The backend is maintained in a separate repository for better separation of concerns and deployment flexibility.
 
-Simply open [Lovable](https://lovable.dev/projects/d7ceb34f-6d75-4b20-b9ae-e515be9b6f5f) and click on Share -> Publish.
+1. Clone the backend repository:
+   ```bash
+   git clone https://github.com/your-username/qualagents-langgraph-backend.git
+   cd qualagents-langgraph-backend
+   ```
 
-## I want to use a custom domain - is that possible?
+2. Refer to the backend repository's README for detailed setup instructions.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Deployment
+
+### Frontend Deployment
+
+1. Build the frontend:
+   ```bash
+   npm run build
+   ```
+
+2. Deploy the contents of the `dist` directory to your preferred hosting service (Netlify, Vercel, etc.)
+
+3. Ensure that the environment variables are properly set for your production environment.
+
+### Backend Deployment
+
+The backend can be deployed on Render.com using the provided `render.yaml` configuration file. See the backend repository for detailed deployment instructions.
+
+## System Architecture
+
+### Agent Methodologies
+
+QualAgents features multiple AI agents, each implementing a different methodological approach:
+
+1. **Grounded Theory Agent**: Identifies patterns and themes directly from data
+2. **Feminist Theory Agent**: Analyzes power dynamics and gender considerations
+3. **Bias Identification Agent**: Recognizes potential biases in data collection or interpretation
+4. **Critical Analysis Agent**: Applies critical theory to identify underlying assumptions
+5. **Phenomenological Agent**: Focuses on lived experiences and subjective perceptions
+
+### Data Flow
+
+1. User uploads qualitative data (text, interviews, survey responses)
+2. Data is preprocessed and formatted for analysis
+3. Multiple agents analyze the data through different methodological lenses
+4. Results are aggregated, ranked by relevance, and presented as insights
+5. Users can interact with insights, provide feedback, and export findings
+
+## Customization
+
+QualAgents allows for extensive customization of:
+
+- Agent parameters and behaviors
+- Analysis settings
+- Visualization preferences
+- Export formats
+- Collaboration settings
+
+## Integration with Supabase
+
+This project uses Supabase for:
+
+- User authentication and management
+- Data storage
+- Edge functions for processing complex operations
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Thanks to the LangChain and LangGraph communities
+- Hugging Face for providing transformer models
+- The shadcn/ui team for their excellent component library
